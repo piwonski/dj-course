@@ -2,6 +2,7 @@ import os
 import asyncio
 from dotenv import load_dotenv
 from anthropic import Anthropic, AsyncClient
+import mlflow
 
 load_dotenv()
 
@@ -9,6 +10,11 @@ print(f"env var \"ANTHROPIC_API_KEY\": { os.getenv('ANTHROPIC_API_KEY', '')[:4] 
 if not os.getenv('ANTHROPIC_API_KEY'):
     raise ValueError("ANTHROPIC_API_KEY environment variable is not set. Please set it to your OpenAI API key.")
 
+# --- MLflow Configuration ---
+mlflow.anthropic.autolog()
+
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
+mlflow.set_experiment("DJ_anthropic_tracking")
 
 client = AsyncClient(api_key=os.getenv('ANTHROPIC_API_KEY'))
 MODEL = 'claude-3-5-haiku-latest'
