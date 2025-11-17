@@ -1,6 +1,7 @@
 from google import genai
 from google.genai import types
 import os 
+import mlflow
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -9,6 +10,10 @@ load_dotenv()
 print(f"env var \"GEMINI_API_KEY\" is: { os.getenv('GEMINI_API_KEY', '')[:4] + '...' + os.getenv('GEMINI_API_KEY', '')[-4:] if len(os.getenv('GEMINI_API_KEY', '')) > 0 else 'NOT SET' }")
 if not os.getenv('GEMINI_API_KEY'):
     raise ValueError("GEMINI_API_KEY environment variable is not set. Please set it to your Google Gemini API key.")
+
+mlflow.gemini.autolog();
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
+mlflow.set_experiment("DJ_google_genai_tracking")
 
 client = genai.Client()
 
