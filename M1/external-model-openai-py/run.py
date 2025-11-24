@@ -1,5 +1,6 @@
 import os
 import sys
+import tiktoken
 from openai import OpenAI
 from dotenv import load_dotenv
 from colorama import init, Fore, Style
@@ -32,9 +33,12 @@ def run():
     # model = "gpt-4"
     # model = "gpt-o4"
     # model = "gpt-4o"
-    model = "gpt-4-turbo" # Selected model
+    # model = "gpt-4-turbo" 
+    model = "gpt-4o-mini" # Selected model
 
     prompt_content = "Jakie jest najszybsze zwierzę na Ziemi?" # User query
+
+    encoder = tiktoken.encoding_for_model(model)
 
     # Display the model used, colored cyan
     print(f"{ITEM}model{RESET}: {model}")
@@ -55,10 +59,13 @@ def run():
         response_text = completion.choices[0].message.content.strip()
         usage = completion.usage
 
+        response_tokens = encoder.encode(response_text)
+
         # Display the conversation, with roles colored yellow
         print(f"{SECTION}--- Conversation ---{RESET}")
         print(f"{ITEM}User{RESET}: \"{prompt_content}\"")
         print(f"{ITEM}Model{RESET}: \"{response_text}\"")
+        print(f"{ITEM}Tokenized{RESET}: \"{response_tokens}\"")
         
         # Display usage statistics
         print(f"{SECTION}--- Usage Statistics ---{RESET}")
