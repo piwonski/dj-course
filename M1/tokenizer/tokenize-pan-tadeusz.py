@@ -1,3 +1,4 @@
+import os
 from tokenizers import Tokenizer
 from corpora import get_corpus_file
 
@@ -18,6 +19,10 @@ with open(get_corpus_file("WOLNELEKTURY", "pan-tadeusz-ksiega-*.txt")[0], 'r', e
 encoded = tokenizer.encode(source_txt)
 
 file_name = f"logs/tokenized-Pan-Tadeusz-{TOKENIZER}.log"
+
+# Upewnij się, że katalog 'logs' istnieje; jeśli nie, utwórz go
+os.makedirs(os.path.dirname(file_name), exist_ok=True)
+
 with open(file_name, 'w', encoding='utf-8') as f:
     f.write(f"Liczba tokenów: {len(encoded.ids)}\n")
     f.write(f"Tokenizer: {TOKENIZER}\n")

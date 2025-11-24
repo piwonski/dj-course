@@ -4,6 +4,7 @@ from tokenizers import Tokenizer
 
 TEXT_TO_TOKENIZE = "Witaj Świecie, co cię w plecy gniecie? Spacje są kluczowe!" 
 TOKENIZER_PATH = "tokenizers/custom_bpe_tokenizer.json"
+# TOKENIZER_PATH = "tokenizers/bielik-v3-tokenizer.json"
 
 def visualize_tokens_with_gaps(text: str, encoding):
     tokens = encoding.tokens
