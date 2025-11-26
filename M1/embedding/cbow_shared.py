@@ -27,11 +27,11 @@ OUTPUT_MODEL_FILE = "embedding_word2vec_cbow_model.model"
 # Parametry treningu Word2Vec / CBOW / Skip-gram
 #
 
-VECTOR_LENGTH = 20
-WINDOW_SIZE = 6
+VECTOR_LENGTH = 100
+WINDOW_SIZE = 10
 MIN_COUNT = 2          # minimalna liczba wystąpień tokenu
-WORKERS = 4            # liczba wątków
-EPOCHS = 20            # liczba epok
+WORKERS = 8            # liczba wątków
+EPOCHS = 30            # liczba epok
 SAMPLE_RATE = 1e-2     # subsampling częstych słów
 SG_MODE = 0            # 0 dla CBOW, 1 dla Skip-gram
 
