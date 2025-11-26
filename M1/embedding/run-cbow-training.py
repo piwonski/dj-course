@@ -11,6 +11,12 @@ from cbow_shared import (  # type: ignore
     OUTPUT_MAP_FILE,
     OUTPUT_MODEL_FILE,
     MIN_COUNT,
+    VECTOR_LENGTH,
+    WINDOW_SIZE,
+    WORKERS,
+    EPOCHS,
+    SAMPLE_RATE,
+    SG_MODE,
 )
 
 # Ustawienie logowania dla gensim
@@ -20,15 +26,6 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 # files = CORPORA_FILES["WOLNELEKTURY"]
 # files = CORPORA_FILES["PAN_TADEUSZ"]
 files = CORPORA_FILES["ALL"]
-
-# Parametry treningu Word2Vec (CBOW)
-VECTOR_LENGTH = 20
-WINDOW_SIZE = 6
-MIN_COUNT = 2         
-WORKERS = 4           
-EPOCHS = 20          
-SAMPLE_RATE = 1e-2
-SG_MODE = 0 # 0 dla CBOW, 1 dla Skip-gram
 
 try:
     print(f"Ładowanie tokenizera z pliku: {TOKENIZER_FILE}")
