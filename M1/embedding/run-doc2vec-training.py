@@ -21,8 +21,8 @@ from doc2vec_shared import (  # type: ignore
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 # --- KONFIGURACJA ŚCIEŻEK I PARAMETRÓW ---
-# files = CORPORA_FILES["ALL"]
-files = CORPORA_FILES["WOLNELEKTURY"]
+files = CORPORA_FILES["ALL"]
+# files = CORPORA_FILES["WOLNELEKTURY"]
 # files = CORPORA_FILES["PAN_TADEUSZ"]
 
 # --- ETAP 1: Wczytanie, Tokenizacja i Przygotowanie Danych ---

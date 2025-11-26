@@ -102,7 +102,7 @@ try:
     print("=== ROZPOCZYNAM ETAP WNIOSKOWANIA (INFERENCE) ===")
     print("="*50)
 
-    new_sentence = "Jestem głodny."
+    new_sentence = "Jestem głodny i bardzo chętnie zjadłbym coś."
     print(f"Zdanie do wnioskowania: \"{new_sentence}\"")
     log_to_file(f"Zdanie do wnioskowania: \"{new_sentence}\"")
 
