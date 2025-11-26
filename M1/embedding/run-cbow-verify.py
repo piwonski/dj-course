@@ -2,16 +2,14 @@ import numpy as np
 import logging
 from gensim.models import Word2Vec
 from tokenizers import Tokenizer
+from cbow_shared import (  # type: ignore
+    TOKENIZER_FILE,
+    OUTPUT_MODEL_FILE,
+    MIN_COUNT,
+)
 
 # Ustawienie logowania dla gensim
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-
-# --- ŚCIEŻKI DO ARTEFAKTÓW WYGENEROWANYCH W TRAKCIE TRENINGU ---
-# TOKENIZER_FILE = "../tokenizer/tokenizers/custom_bpe_tokenizer.json"
-# TOKENIZER_FILE = "../tokenizer/tokenizers/bielik-v1-tokenizer.json"
-TOKENIZER_FILE = "../tokenizer/tokenizers/bielik-v3-tokenizer.json"
-OUTPUT_MODEL_FILE = "embedding_word2vec_cbow_model.model"
-MIN_COUNT = 2  # używane jedynie w komunikatach diagnostycznych
 
 try:
     print(f"Ładowanie tokenizera z pliku: {TOKENIZER_FILE}")

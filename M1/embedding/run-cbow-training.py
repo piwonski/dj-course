@@ -4,7 +4,14 @@ import logging
 from gensim.models import Word2Vec
 from tokenizers import Tokenizer
 # import z corpora (zakładam, że jest to plik pomocniczy)
-from corpora import CORPORA_FILES # type: ignore 
+from corpora import CORPORA_FILES # type: ignore
+from cbow_shared import (  # type: ignore
+    TOKENIZER_FILE,
+    OUTPUT_TENSOR_FILE,
+    OUTPUT_MAP_FILE,
+    OUTPUT_MODEL_FILE,
+    MIN_COUNT,
+)
 
 # Ustawienie logowania dla gensim
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
@@ -13,14 +20,6 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 # files = CORPORA_FILES["WOLNELEKTURY"]
 # files = CORPORA_FILES["PAN_TADEUSZ"]
 files = CORPORA_FILES["ALL"]
-
-# TOKENIZER_FILE = "../tokenizer/tokenizers/custom_bpe_tokenizer.json"
-# TOKENIZER_FILE = "../tokenizer/tokenizers/bielik-v1-tokenizer.json"
-TOKENIZER_FILE = "../tokenizer/tokenizers/bielik-v3-tokenizer.json"
-
-OUTPUT_TENSOR_FILE = "embedding_tensor_cbow.npy"
-OUTPUT_MAP_FILE = "embedding_token_to_index_map.json"
-OUTPUT_MODEL_FILE = "embedding_word2vec_cbow_model.model"
 
 # Parametry treningu Word2Vec (CBOW)
 VECTOR_LENGTH = 20
