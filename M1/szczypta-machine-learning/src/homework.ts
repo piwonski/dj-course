@@ -14,20 +14,33 @@ import { displayVector, displayMatrix } from "./display";
 
 // PROŚBA: jeśli znasz rozwiązanie, to nie spamuj discorda - a przynajmniej nie od razu. Pozwól innym pomóżdżyć 😎
 
-const { WK_Matrix, WQ_Matrix, X_Input_Matrix } = fromJSONFile(jsonFilePath('case-1.json'));
-// const { WK_Matrix, WQ_Matrix, X_Input_Matrix } = fromJSONFile(jsonFilePath('case-2.json'));
-// const { WK_Matrix, WQ_Matrix, X_Input_Matrix } = fromJSONFile(jsonFilePath('case-3.json'));
-// const { WK_Matrix, WQ_Matrix, X_Input_Matrix } = fromJSONFile(jsonFilePath('case-4.json'));
+const inputCases = ['case-1.json', 'case-2.json', 'case-3.json', 'case-4.json'];
 
-console.log('WK_Matrix');
-console.log(displayMatrix(WK_Matrix, -1));
-console.log('WQ_Matrix');
-console.log(displayMatrix(WQ_Matrix, -1));
-console.log('X_Input_Matrix');
-console.log(displayMatrix(X_Input_Matrix, -1));
+inputCases.forEach((caseName, index) => {
+    const { WK_Matrix, WQ_Matrix, X_Input_Matrix } = fromJSONFile(jsonFilePath(caseName));
 
-const x1_vector = X_Input_Matrix[0];
-console.log('x1_vector');
-console.log(displayVector(x1_vector, -1));
+    const x1_vector = X_Input_Matrix[0];
+    // console.log('x1_vector');
+    // console.log(displayVector(x1_vector, -1));
 
-// przypomnienie zadania: naley policzyć "attention matrix S"
+    // Step 1: compute Q = X * W^Q and K = X * W^K
+    const Q_Matrix = multiplyMatrices(X_Input_Matrix, WQ_Matrix);
+    const K_Matrix = multiplyMatrices(X_Input_Matrix, WK_Matrix);
+
+    // Step 2: S = Q * K^T
+    const K_Transposed = transpose(K_Matrix);
+    const Attention_Score_Matrix = multiplyMatrices(Q_Matrix, K_Transposed);
+
+    console.log(`Attention Score Matrix S (${caseName}) = Q * K^T`);
+    console.log(displayMatrix(Attention_Score_Matrix, -1));
+
+    if (index < inputCases.length - 1) {
+        console.log('\n');
+    }
+
+    // Quick sanity check: s_11 should equal dot(q1, k1)
+    // const q1_vector = Q_Matrix[0];
+    // const k1_vector = K_Matrix[0];
+    // const s11_dot = dotProduct(q1_vector, k1_vector);
+    // console.log('s_11 from matrix:', Attention_Score_Matrix[0][0], '| s_11 via dot product:', s11_dot);
+});
