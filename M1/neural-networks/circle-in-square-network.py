@@ -19,12 +19,14 @@ writer = SummaryWriter(LOG_DIR)
 class CircleInSquareNet(nn.Module):
     def __init__(self):
         super(CircleInSquareNet, self).__init__()
-        self.fc1 = nn.Linear(2, 2)
-        self.fc2 = nn.Linear(2, 1)
+        self.fc1 = nn.Linear(2, 10)
+        self.fc2 = nn.Linear(10, 8)
+        self.fc3 = nn.Linear(8, 1)
 
     def forward(self, x):
         x = nn.ReLU()(self.fc1(x))
-        x = self.fc2(x)
+        x = nn.ReLU()(self.fc2(x))
+        x = self.fc3(x)
         return x
 
 np.random.seed(42)
@@ -47,7 +49,7 @@ def generate_circle_data(num_samples, radius=0.5):
     return X, Y
 
 # Generowanie danych
-NUM_SAMPLES = 10 # 🔥🔥🔥 PRACUJESZ TUTAJ
+NUM_SAMPLES = 120 # 🔥🔥🔥 PRACUJESZ TUTAJ
 X_circle, Y_circle = generate_circle_data(NUM_SAMPLES)
 
 # Inicjalizacja:
@@ -57,7 +59,7 @@ model2 = CircleInSquareNet()
 # model z sekcji 1
 
 # Krok 1: Definicja Parametrów
-LEARNING_RATE = 0.00001 # 🔥🔥🔥 PRACUJESZ TUTAJ
+LEARNING_RATE = 0.02 # 🔥🔥🔥 PRACUJESZ TUTAJ
 EPOCHS = 500 # 🔥🔥🔥 PRACUJESZ TUTAJ
 STEP = 100
 
@@ -88,8 +90,10 @@ for epoch in range(1, EPOCHS + 1):
         writer.add_histogram('Outputs', outputs.data, epoch)
         writer.add_histogram('Gradients/Layer_FC1_Weights', model2.fc1.weight.grad, epoch)
         writer.add_histogram('Gradients/Layer_FC2_Weights', model2.fc2.weight.grad, epoch)
+        writer.add_histogram('Gradients/Layer_FC3_Weights', model2.fc3.weight.grad, epoch)
         writer.add_histogram('Weights/Layer_FC1_Weights', model2.fc1.weight.data, epoch)
         writer.add_histogram('Weights/Layer_FC2_Weights', model2.fc2.weight.data, epoch)
+        writer.add_histogram('Weights/Layer_FC3_Weights', model2.fc3.weight.data, epoch)
         print(f'Epoka [{epoch}/{EPOCHS}], Strata (Loss): {loss.item():.6f}')
 
 print("--- Trening Zakończony ---")
