@@ -12,6 +12,11 @@ if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
 writer = SummaryWriter(LOG_DIR)
 
+# torch.manual_seed(17070015169259637632)
+
+seed = torch.initial_seed()  # pobiera aktualny seed RNG PyTorcha
+print(f"Użyty seed PyTorch: {seed}")
+
 np.set_printoptions(precision=4, suppress=True)
 
 ## 1. Definicja Modelu Sieci Neuronowej
@@ -21,24 +26,24 @@ np.set_printoptions(precision=4, suppress=True)
 class SimpleXORNet(nn.Module):
     def __init__(self):
         super(SimpleXORNet, self).__init__()
-        # Warstwa ukryta: 2 wejścia (X) -> 4 neurony
-        self.fc1 = nn.Linear(2, 4)
+        # Warstwa ukryta 1: 2 wejścia (X) -> 8 neuronów
+        self.fc1 = nn.Linear(2, 10)
+        # Warstwa ukryta 2: 8 neuronów -> 4 neurony
+        self.fc2 = nn.Linear(10, 6)
         # Warstwa wyjściowa: 4 neurony -> 1 wyjście (Y)
-        self.fc2 = nn.Linear(4, 1)
-        # Inicjalizacja Xavier (Glorot) utrzymuje stabilny rozkład na starcie
-        nn.init.xavier_uniform_(self.fc1.weight)
-        nn.init.zeros_(self.fc1.bias)
-        nn.init.xavier_uniform_(self.fc2.weight)
-        nn.init.zeros_(self.fc2.bias)
+        self.fc3 = nn.Linear(6, 1)
 
     def forward(self, x):
         # 1. Przejście przez pierwszą warstwę liniową
         x = self.fc1(x)
-        # 2. Zastosowanie nieliniowej funkcji aktywacji ReLU
+        # 2. Nieliniowa funkcja aktywacji ReLU
         x = nn.ReLU()(x)
-        # 3. Przejście przez warstwę wyjściową (logits)
+        # 3. Druga warstwa ukryta + ReLU
         x = self.fc2(x)
-        # 4. Zastosowanie Sigmoid do uzyskania prawdopodobieństwa (w zakresie 0-1)
+        x = nn.ReLU()(x)
+        # 4. Warstwa wyjściowa (logits)
+        x = self.fc3(x)
+        # 5. Sigmoid – prawdopodobieństwo (0–1)
         x = torch.sigmoid(x)
         return x
 
@@ -47,18 +52,18 @@ class SimpleXORNet(nn.Module):
 model = SimpleXORNet()
 model_epochs = 0
 
-LEARNING_RATE = 0.01  # delikatniejszy krok ogranicza ryzyko plateau
+LEARNING_RATE = 0.5 # 🔥🔥🔥
 
 # BCELoss dla klasyfikacji binarnej (używamy go po Sigmoidzie)
 criterion = nn.BCELoss()
 
-# Adam adaptuje krok dla każdej wagi i dodaje stabilizujące momentum
-optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
+# Optymalizator: Wskaźnik uczenia (lr) jest kluczowy, tu mała wartość
+optimizer = optim.SGD(model.parameters(), LEARNING_RATE)
 
 ## 3. Przygotowanie Danych i Pętla Treningowa
 # Ważne: PyTorch oczekuje liczb zmiennoprzecinkowych dla wejść sieci.
 
-NUM_EPOCHS = 1600  # lekko dłużej, by skompensować mniejszy lr
+NUM_EPOCHS = 2000 # 🔥🔥🔥
 
 # Dane wejściowe (4 pary: [0, 0], [0, 1], [1, 0], [1, 1])
 X = torch.tensor([[0., 0.], [0., 1.], [1., 0.], [1., 1.]])
@@ -91,8 +96,8 @@ for epoch in range(NUM_EPOCHS):
         writer.add_histogram('Outputs', outputs.data, epoch)
         writer.add_histogram('Gradients/Layer_FC1_Weights', model.fc1.weight.grad, epoch)
         writer.add_histogram('Gradients/Layer_FC2_Weights', model.fc2.weight.grad, epoch)
-        writer.add_histogram('Weights/Layer_FC1_Weights', model.fc1.weight.data, epoch)
-        writer.add_histogram('Weights/Layer_FC2_Weights', model.fc2.weight.data, epoch)
+        writer.add_histogram('Weights/Layer_F1_Weights', model.fc1.weight.data, epoch)
+        writer.add_histogram('Weights/Layer_F2_Weights', model.fc2.weight.data, epoch)
 
 print("--- Trening Zakończony ---")
 
@@ -106,9 +111,9 @@ with torch.no_grad():
     # Konwersja prawdopodobieństw (0-1) na konkretne klasy (0 lub 1)
     predicted_classes = (predictions >= 0.5).float()
 
-    print(f"Wejścia (X):\n{X.numpy()}")
-    print(f"Oczekiwane Wyjścia (Y):\n{Y.numpy().flatten()}")
-    print(f"Predykcje Modelu:\n{predicted_classes.numpy().flatten()}")
+    # print(f"Wejścia (X):\n{X.numpy()}")
+    # print(f"Oczekiwane Wyjścia (Y):\n{Y.numpy().flatten()}")
+    # print(f"Predykcje Modelu:\n{predicted_classes.numpy().flatten()}")
 
     # Sprawdzenie użyteczności - czy się nauczyliśmy?
     accuracy = (predicted_classes == Y).sum().item() / len(Y)
@@ -116,13 +121,13 @@ with torch.no_grad():
     
 ## 5. Wyświetl model (strukturę i parametry)
 
-print("--- Struktura Sieci (Wbudowane print()) ---")
-print(model)
+# print("--- Struktura Sieci (Wbudowane print()) ---")
+# print(model)
 
-print("--- Parametry Modelu ---")
-for name, param in model.named_parameters():
-    if param.requires_grad:
-        print(f"- {name}:\n{param.data.numpy()}")
+# print("--- Parametry Modelu ---")
+# for name, param in model.named_parameters():
+#     if param.requires_grad:
+#         print(f"- {name}:\n{param.data.numpy()}")
         
 ## 6. Zapisz wagi do pliku
 
