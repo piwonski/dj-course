@@ -25,6 +25,11 @@ class SimpleXORNet(nn.Module):
         self.fc1 = nn.Linear(2, 4)
         # Warstwa wyjściowa: 4 neurony -> 1 wyjście (Y)
         self.fc2 = nn.Linear(4, 1)
+        # Inicjalizacja Xavier (Glorot) utrzymuje stabilny rozkład na starcie
+        nn.init.xavier_uniform_(self.fc1.weight)
+        nn.init.zeros_(self.fc1.bias)
+        nn.init.xavier_uniform_(self.fc2.weight)
+        nn.init.zeros_(self.fc2.bias)
 
     def forward(self, x):
         # 1. Przejście przez pierwszą warstwę liniową
@@ -42,18 +47,18 @@ class SimpleXORNet(nn.Module):
 model = SimpleXORNet()
 model_epochs = 0
 
-LEARNING_RATE = 0.5 # 🔥🔥🔥
+LEARNING_RATE = 0.01  # delikatniejszy krok ogranicza ryzyko plateau
 
 # BCELoss dla klasyfikacji binarnej (używamy go po Sigmoidzie)
 criterion = nn.BCELoss()
 
-# Optymalizator: Wskaźnik uczenia (lr) jest kluczowy, tu mała wartość
-optimizer = optim.SGD(model.parameters(), LEARNING_RATE)
+# Adam adaptuje krok dla każdej wagi i dodaje stabilizujące momentum
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
 
 ## 3. Przygotowanie Danych i Pętla Treningowa
 # Ważne: PyTorch oczekuje liczb zmiennoprzecinkowych dla wejść sieci.
 
-NUM_EPOCHS = 2000 # 🔥🔥🔥
+NUM_EPOCHS = 1600  # lekko dłużej, by skompensować mniejszy lr
 
 # Dane wejściowe (4 pary: [0, 0], [0, 1], [1, 0], [1, 1])
 X = torch.tensor([[0., 0.], [0., 1.], [1., 0.], [1., 1.]])
