@@ -1,5 +1,6 @@
 import time
 import threading
+import torch
 from TTS.api import TTS
 import warnings 
 from animate import run_tts_animation, console
@@ -33,10 +34,23 @@ texts = [
 
 if __name__ == "__main__":
     
+    # Automatyczne wykrywanie najlepszego urządzenia
+    if torch.backends.mps.is_available():
+        device = "mps"
+        device_name = "Metal Performance Shaders (Apple GPU)"
+    elif torch.cuda.is_available():
+        device = "cuda"
+        device_name = "CUDA (NVIDIA GPU)"
+    else:
+        device = "cpu"
+        device_name = "CPU"
+    
+    console.print(f"\n[bold cyan]🔧 Wykryte urządzenie: {device_name}[/bold cyan]")
+    
     try:
-        console.print("\n[bold yellow]🤖 Ładowanie modelu TTS...[/bold yellow]")
-        tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to("cpu")
-        console.print("[bold green]✅ Model załadowany pomyślnie.[/bold green]")
+        console.print("[bold yellow]🤖 Ładowanie modelu TTS...[/bold yellow]")
+        tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+        console.print(f"[bold green]✅ Model załadowany pomyślnie na {device.upper()}.[/bold green]")
     except Exception as e:
         console.print(f"[bold red]❌ Błąd ładowania modelu: {e}[/bold red]")
         exit(1)
