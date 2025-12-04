@@ -118,8 +118,8 @@ class GeminiLLMClient:
     
         # Walidacja z Pydantic
         config = GeminiConfig(
-            model_name=os.getenv('MODEL_NAME', 'gemini-2.5-flash'),
-            gemini_api_key=os.getenv('GEMINI_API_KEY', '')
+            model_name=os.getenv("GEMINI_MODEL_NAME", "gemini-2.5-flash"),
+            gemini_api_key=os.getenv("GEMINI_API_KEY", ""),
         )
         
         return cls(model_name=config.model_name, api_key=config.gemini_api_key)

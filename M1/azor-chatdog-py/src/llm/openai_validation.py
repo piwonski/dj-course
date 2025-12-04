@@ -21,7 +21,7 @@ class OpenAIConfig(BaseModel):
         - tylko ASCII (bez emoji/polskich znaków – nagłówki HTTP)
         """
         if not v or v.strip() == "":
-            raise ValueError("OPENAI_API_KEY nie może być pusty")
+            raise ValueError("OPENAI_API_KEY nie jest ustawiony w zmiennych środowiskowych lub jest pusty")
 
         key = v.strip()
 

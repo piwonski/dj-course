@@ -12,12 +12,12 @@
 **Dla Gemini (ENGINE=GEMINI):**
 * `ENGINE=GEMINI`
 * `GEMINI_API_KEY` - klucz API Google Gemini
-* `MODEL_NAME` - nazwa modelu (np. "gemini-2.5-flash")
+* `GEMINI_MODEL_NAME` - nazwa modelu (np. "gemini-2.5-flash")
 
 **Dla OpenAI (ENGINE=OPEN_AI):**
 * `ENGINE=OPEN_AI`
 * `OPENAI_API_KEY` - klucz API OpenAI
-* `MODEL_NAME` - nazwa modelu (np. "gpt-4o-mini", "gpt-4.1", itp.)
+* `OPENAI_MODEL_NAME` - nazwa modelu (np. "gpt-4o-mini", "gpt-4.1", itp.)
 
 **Dla Llama (ENGINE=LLAMA_CPP):**
 * `ENGINE=LLAMA_CPP`

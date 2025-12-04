@@ -142,15 +142,18 @@ class OpenAILLMClient:
         Factory method that creates an OpenAILLMClient instance from environment variables.
 
         Expected environment variables:
-            MODEL_NAME: Name of the OpenAI model to use
+            OPENAI_MODEL_NAME: Name of the OpenAI model to use
             OPENAI_API_KEY: OpenAI API key
         """
         load_dotenv()
 
         # Walidacja z Pydantic
+        # Jeśli zmienna środowiskowa OPENAI_API_KEY nie jest ustawiona,
+        # wstrzykujemy jedną spację. Przejdzie ona `min_length=1`,
+        # ale zostanie odrzucona przez walidator `.strip()`.
         config = OpenAIConfig(
-            model_name=os.getenv("MODEL_NAME", "gpt-4o-mini"),
-            openai_api_key=os.getenv("OPENAI_API_KEY", ""),
+            model_name=os.getenv("OPENAI_MODEL_NAME", "gpt-4o-mini"),
+            openai_api_key=os.getenv("OPENAI_API_KEY", " "),
         )
 
         return cls(model_name=config.model_name, api_key=config.openai_api_key)
