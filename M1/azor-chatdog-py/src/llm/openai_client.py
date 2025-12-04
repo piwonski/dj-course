@@ -173,6 +173,9 @@ class OpenAILLMClient:
         system_instruction: str,
         history: Optional[List[Dict]] = None,
         thinking_budget: int = 0,
+        top_p: Optional[float] = None,
+        top_k: Optional[int] = None,
+        temperature: Optional[float] = None,
     ) -> OpenAIChatSessionWrapper:
         """
         Creates a new chat session with the specified configuration.
@@ -181,11 +184,19 @@ class OpenAILLMClient:
             system_instruction: System role/prompt for the assistant
             history: Previous conversation history (optional, in universal dict format)
             thinking_budget: Unused (for interface compatibility)
+            top_p: Unused (for interface compatibility)
+            top_k: Unused (for interface compatibility)
+            temperature: Unused (for interface compatibility)
 
         Returns:
             OpenAIChatSessionWrapper with universal dictionary-based interface
         """
-        _ = thinking_budget  # Unused, for API compatibility
+        # Unused parameters (for interface compatibility)
+        _ = thinking_budget
+        _ = top_p
+        _ = top_k
+        _ = temperature
+        
         return OpenAIChatSessionWrapper(
             client=self._client,
             model_name=self.model_name,

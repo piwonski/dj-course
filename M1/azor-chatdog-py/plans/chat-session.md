@@ -55,11 +55,19 @@ This refactoring consolidates scattered session state and logic into a cohesive 
                  ▼
 ┌─────────────────────────────────────────┐
 │         ChatSession                     │
+│  - assistant: Assistant                 │
 │  - session_id: str                      │
 │  - history: list[types.Content]         │
 │  - _llm_chat_session: ChatSession       │
-│  + __init__(session_id?, history?)      │
-│  + load_from_file(session_id)           │
+│  - _top_p: float | None                 │
+│  - _top_k: int | None                   │
+│  - _temperature: float | None           │
+│  + __init__(assistant, session_id?,     │
+│             history?, top_p?, top_k?,   │
+│             temperature?)                │
+│  + load_from_file(assistant, session_id,│
+│                   top_p?, top_k?,       │
+│                   temperature?)          │
 │  + save_to_file()                       │
 │  + send_message(text) -> Response       │
 │  + get_history() -> list[Content]       │
@@ -89,33 +97,48 @@ class ChatSession:
     Encapsulates session ID, conversation history, and LLM chat session.
     """
     
-    def __init__(self, session_id: str | None = None, history: list[types.Content] | None = None):
+    def __init__(
+        self,
+        assistant: Assistant,
+        session_id: str | None = None,
+        history: list[types.Content] | None = None,
+        top_p: float | None = None,
+        top_k: int | None = None,
+        temperature: float | None = None,
+    ):
         """
         Initialize a chat session.
         
         Args:
+            assistant: Assistant instance that defines the behavior and model
             session_id: Unique session identifier. If None, generates a new UUID.
             history: Initial conversation history. If None, starts empty.
+            top_p: Optional top-p sampling parameter (LLaMA only)
+            top_k: Optional top-k sampling parameter (LLaMA only)
+            temperature: Optional temperature parameter (LLaMA only)
         """
+        self.assistant = assistant
         self.session_id = session_id or str(uuid.uuid4())
         self._history = history or []
         self._llm_chat_session = None
+        self._top_p = top_p
+        self._top_k = top_k
+        self._temperature = temperature
         self._initialize_llm_session()
     
     def _initialize_llm_session(self):
         """
-        Creates or recreates the Google GenAI chat session with current history.
+        Creates or recreates the LLM chat session with current history.
         This should be called after any history modification.
         """
-        from assistant.azor import SYSTEM_ROLE
-        
-        self._llm_chat_session = llm_client.client.chats.create(
-            model=llm_client.MODEL_NAME,
+        # Passes system_instruction from assistant and optional sampling parameters
+        self._llm_chat_session = llm_client.create_chat_session(
+            system_instruction=self.assistant.system_prompt,
             history=self._history,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_ROLE,
-                thinking_config=types.ThinkingConfig(thinking_budget=0)
-            )
+            thinking_budget=0,
+            top_p=self._top_p,
+            top_k=self._top_k,
+            temperature=self._temperature,
         )
 ```
 
@@ -134,12 +157,23 @@ class ChatSession:
 
 ```python
     @classmethod
-    def load_from_file(cls, session_id: str) -> tuple['ChatSession | None', str | None]:
+    def load_from_file(
+        cls,
+        assistant: Assistant,
+        session_id: str,
+        top_p: float | None = None,
+        top_k: int | None = None,
+        temperature: float | None = None,
+    ) -> tuple['ChatSession | None', str | None]:
         """
         Loads a session from disk.
         
         Args:
+            assistant: Assistant instance to use for this session
             session_id: ID of the session to load
+            top_p: Optional top-p sampling parameter (LLaMA only)
+            top_k: Optional top-k sampling parameter (LLaMA only)
+            temperature: Optional temperature parameter (LLaMA only)
             
         Returns:
             tuple: (ChatSession object or None, error_message or None)
@@ -149,7 +183,14 @@ class ChatSession:
         if error:
             return None, error
         
-        session = cls(session_id=session_id, history=history)
+        session = cls(
+            assistant=assistant,
+            session_id=session_id,
+            history=history,
+            top_p=top_p,
+            top_k=top_k,
+            temperature=temperature,
+        )
         return session, None
     
     def save_to_file(self) -> tuple[bool, str | None]:
@@ -347,7 +388,8 @@ class SessionManager:
                 console.print_error(f"Błąd podczas zapisu: {error}")
         
         # Create new session
-        new_session = ChatSession()
+        assistant = create_azor_assistant()
+        new_session = ChatSession(assistant=assistant)
         self._current_session = new_session
         
         console.print_info(f"\n--- Rozpoczęto nową sesję: {new_session.session_id} ---")
@@ -372,7 +414,8 @@ class SessionManager:
             self._current_session.save_to_file()
         
         # Load new session
-        new_session, error = ChatSession.load_from_file(session_id)
+        assistant = create_azor_assistant()
+        new_session, error = ChatSession.load_from_file(assistant=assistant, session_id=session_id)
         
         if error:
             console.print_error(f"Nie można wczytać sesji o ID: {session_id}. {error}")
@@ -389,24 +432,38 @@ class SessionManager:
         
         return new_session, error
     
-    def initialize_from_cli(self, cli_session_id: str | None) -> ChatSession:
+    def initialize_from_cli(self, cli_args) -> ChatSession:
         """
         Initializes a session based on CLI arguments.
         Either loads an existing session or creates a new one.
         
         Args:
-            cli_session_id: Session ID from CLI, or None for new session
+            cli_args: Namespace object with CLI arguments (session_id, top_p, top_k, temperature)
             
         Returns:
             ChatSession: The initialized session
         """
+        cli_session_id = getattr(cli_args, "session_id", None)
+        top_p = getattr(cli_args, "top_p", None)
+        top_k = getattr(cli_args, "top_k", None)
+        temperature = getattr(cli_args, "temperature", None)
+        
         if cli_session_id:
-            session, error = ChatSession.load_from_file(cli_session_id)
+            session, error = ChatSession.load_from_file(
+                cli_session_id,
+                top_p=top_p,
+                top_k=top_k,
+                temperature=temperature
+            )
             
             if error:
                 console.print_error(error)
                 # Fallback to new session
-                session = ChatSession()
+                session = ChatSession(
+                    top_p=top_p,
+                    top_k=top_k,
+                    temperature=temperature
+                )
                 console.print_info(f"Rozpoczęto nową sesję z ID: {session.session_id}")
             
             self._current_session = session
@@ -417,7 +474,11 @@ class SessionManager:
                 display_history_summary(session.get_history())
         else:
             print("Rozpoczynanie nowej sesji.")
-            session = ChatSession()
+            session = ChatSession(
+                top_p=top_p,
+                top_k=top_k,
+                temperature=temperature
+            )
             self._current_session = session
             console.display_help(session.session_id)
         
@@ -545,8 +606,8 @@ def init_chat():
     manager = session_manager.get_session_manager()
     
     # Initialize session based on CLI args
-    cli_session_id = cli.args.get_session_id_from_cli()
-    session = manager.initialize_from_cli(cli_session_id)
+    cli_args = cli.args.parse_cli_args()  # Changed in v1.1: parse_cli_args() instead of get_session_id_from_cli()
+    session = manager.initialize_from_cli(cli_args)
     
     # Register cleanup handler
     atexit.register(lambda: manager.cleanup_and_save())
@@ -1000,6 +1061,7 @@ Once refactoring is complete, consider:
 4. **Session templates**: Start with pre-configured history
 5. **Automatic session archiving**: Archive old sessions
 6. **Session statistics**: Tokens used, message count, etc.
+7. ✅ **CLI sampling parameters**: ~~Add support for top-p, top-k, temperature~~ (Completed in v1.1)
 
 ---
 
@@ -1007,15 +1069,184 @@ Once refactoring is complete, consider:
 
 This refactoring consolidates scattered session logic into a cohesive, testable architecture. The `ChatSession` class becomes the single source of truth, while `SessionManager` orchestrates lifecycle operations. All global state is eliminated, making the codebase more maintainable and robust.
 
-**Estimated Effort**: 4-6 hours for experienced developer
-**Lines Changed**: ~300-400 lines
-**Files Modified**: 7 files
-**Tests Required**: 5 test scenarios
+**v1.0 Refactoring** (Completed):
+- **Estimated Effort**: 4-6 hours for experienced developer
+- **Lines Changed**: ~300-400 lines
+- **Files Modified**: 7 files
+- **Tests Required**: 5 test scenarios
+
+**v1.1 Extension** (Completed):
+- **Feature**: CLI sampling parameters (--top-p, --top-k, --temperature)
+- **Files Modified**: 5 files (args.py, chat.py, chat_session.py, session_manager.py, all LLM clients)
+- **Lines Changed**: ~100 lines
+- **Benefits**: Fine-grained control over LLaMA inference, unified interface across all LLM clients
 
 ---
 
-**Document Version**: 1.0  
+**Document Version**: 1.1  
 **Author**: AI Assistant  
-**Date**: 2025-10-21  
-**Status**: Ready for Implementation
+**Date**: 2024-12-04  
+**Status**: ✅ Completed + Extended with CLI sampling parameters
+
+---
+
+## Post-Implementation Extension (v1.1): CLI Sampling Parameters
+
+### Overview
+After completing the initial refactoring (v1.0), the system was extended to support optional sampling parameters (`--top-p`, `--top-k`, `--temperature`) via CLI. These parameters are used exclusively by the LLaMA client.
+
+### Changes Made
+
+#### 1. CLI Argument Parser (`src/cli/args.py`)
+
+**Current Implementation**:
+```python
+def parse_cli_args() -> argparse.Namespace:
+    """Parses CLI arguments and returns the full namespace.
+
+    Currently supported:
+    - --session-id
+    - --top-p
+    - --top-k
+    - --temperature
+    """
+    parser = argparse.ArgumentParser(description="Interaktywny pies asystent! 🐶")
+    parser.add_argument(
+        '--session-id',
+        type=str,
+        default=None,
+        help="ID sesji do wczytania i kontynuowania"
+    )
+    parser.add_argument(
+        '--top-p',
+        type=float,
+        default=None,
+        help="Parametr top-p dla próbkowania LLaMA (opcjonalny)"
+    )
+    parser.add_argument(
+        '--top-k',
+        type=int,
+        default=None,
+        help="Parametr top-k dla próbkowania LLaMA (opcjonalny)"
+    )
+    parser.add_argument(
+        '--temperature',
+        type=float,
+        default=None,
+        help="Temperatura dla próbkowania LLaMA (opcjonalna)"
+    )
+    return parser.parse_args()
+```
+
+**Note**: The backward-compatible `get_session_id_from_cli()` function was removed. All code uses `parse_cli_args()` directly.
+
+#### 2. Chat Session (`src/session/chat_session.py`)
+
+**Extended Constructor**:
+```python
+def __init__(
+    self,
+    assistant: Assistant,
+    session_id: str | None = None,
+    history: List[Any] | None = None,
+    top_p: float | None = None,
+    top_k: int | None = None,
+    temperature: float | None = None,
+):
+```
+
+**Key Changes**:
+- Added optional sampling parameters to `__init__()` and `load_from_file()`
+- Parameters are stored as instance variables (`self._top_p`, etc.)
+- Parameters are passed to `create_chat_session()` regardless of LLM engine
+- User is informed about parameter values only when using LLAMA_CPP engine
+
+#### 3. LLM Clients
+
+**All LLM clients** (`gemini_client.py`, `openai_client.py`, `llama_client.py`) now accept sampling parameters in `create_chat_session()`:
+
+```python
+def create_chat_session(
+    self,
+    system_instruction: str,
+    history: Optional[List[Dict]] = None,
+    thinking_budget: int = 0,
+    top_p: Optional[float] = None,
+    top_k: Optional[int] = None,
+    temperature: Optional[float] = None,
+) -> ...:
+```
+
+- **LlamaClient**: Actually uses these parameters in model inference
+- **GeminiLLMClient & OpenAILLMClient**: Accept but ignore these parameters (for interface compatibility)
+
+#### 4. Session Manager (`src/session/session_manager.py`)
+
+**Updated `initialize_from_cli()`**:
+```python
+def initialize_from_cli(self, cli_args) -> ChatSession:
+    """
+    Initializes a session based on CLI arguments.
+    Either loads an existing session or creates a new one.
+    
+    Args:
+        cli_args: Namespace object with CLI arguments (session_id, top_p, top_k, temperature)
+    """
+    cli_session_id = getattr(cli_args, "session_id", None)
+    top_p = getattr(cli_args, "top_p", None)
+    top_k = getattr(cli_args, "top_k", None)
+    temperature = getattr(cli_args, "temperature", None)
+    
+    # ... passes parameters to ChatSession constructor
+```
+
+#### 5. Chat Initialization (`src/chat.py`)
+
+**Updated `init_chat()`**:
+```python
+def init_chat():
+    """Initializes a new session or loads an existing one."""
+    print_welcome()
+    manager = get_session_manager()
+    
+    # Initialize session based on CLI args
+    cli_args = cli.args.parse_cli_args()  # Changed from get_session_id_from_cli()
+    session = manager.initialize_from_cli(cli_args)
+    
+    # Register cleanup handler
+    atexit.register(lambda: manager.cleanup_and_save())
+```
+
+### Usage Examples
+
+```bash
+# Start with default LLaMA parameters
+python src/run.py
+
+# Start with custom sampling parameters
+python src/run.py --top-p=0.9 --top-k=40 --temperature=0.7
+
+# Load existing session with custom parameters
+python src/run.py --session-id=abc123 --temperature=0.8
+
+# Mix and match (only specified parameters are overridden)
+python src/run.py --top-k=50
+```
+
+### User Feedback
+
+When using LLaMA engine, the application displays:
+- **Custom parameters**: "Ustawione parametry LLaMA: top_p=0.9, top_k=40, temperature=0.7"
+- **Default parameters**: "Używane domyślne parametry LLaMA (top_p, top_k, temperature z biblioteki llama-cpp)."
+
+When using other engines (Gemini/OpenAI), no parameter information is displayed since they're not used.
+
+### Architecture Impact
+
+This extension maintains the clean architecture from the original refactoring:
+- ✅ No global state introduced
+- ✅ Parameters flow through proper channels (CLI → SessionManager → ChatSession → LLMClient)
+- ✅ Consistent interface across all LLM clients
+- ✅ Backward compatible (parameters are optional)
+- ✅ Clear separation of concerns (only LlamaClient uses the parameters)
 

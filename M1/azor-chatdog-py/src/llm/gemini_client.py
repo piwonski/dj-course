@@ -143,7 +143,10 @@ class GeminiLLMClient:
     def create_chat_session(self, 
                           system_instruction: str, 
                           history: Optional[List[Dict]] = None,
-                          thinking_budget: int = 0) -> GeminiChatSessionWrapper:
+                          thinking_budget: int = 0,
+                          top_p: Optional[float] = None,
+                          top_k: Optional[int] = None,
+                          temperature: Optional[float] = None) -> GeminiChatSessionWrapper:
         """
         Creates a new chat session with the specified configuration.
         
@@ -151,12 +154,20 @@ class GeminiLLMClient:
             system_instruction: System role/prompt for the assistant
             history: Previous conversation history (optional, in universal dict format)
             thinking_budget: Thinking budget for the model
+            top_p: Unused (for interface compatibility)
+            top_k: Unused (for interface compatibility)
+            temperature: Unused (for interface compatibility)
             
         Returns:
             GeminiChatSessionWrapper with universal dictionary-based interface
         """
         if not self._client:
             raise RuntimeError("LLM client not initialized")
+        
+        # Unused parameters (for interface compatibility)
+        _ = top_p
+        _ = top_k
+        _ = temperature
         
         # Convert universal dict format to Gemini Content objects
         gemini_history = []

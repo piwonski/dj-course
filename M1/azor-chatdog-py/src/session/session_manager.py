@@ -125,29 +125,45 @@ class SessionManager:
 
         return new_session, removed_session_id, remove_success, remove_error
 
-    def initialize_from_cli(self, cli_session_id: str | None) -> ChatSession:
+    def initialize_from_cli(self, cli_args) -> ChatSession:
         """
         Initializes a session based on CLI arguments.
         Either loads an existing session or creates a new one.
         
         Args:
-            cli_session_id: Session ID from CLI, or None for new session
+            cli_args: Namespace/obiekt z argumentami CLI (session_id, top_p, top_k, temperature)
             
         Returns:
             ChatSession: The initialized session
         """
+        cli_session_id = getattr(cli_args, "session_id", None)
+        top_p = getattr(cli_args, "top_p", None)
+        top_k = getattr(cli_args, "top_k", None)
+        temperature = getattr(cli_args, "temperature", None)
+
         if cli_session_id:
             assistant = create_azor_assistant()
-            session, error = ChatSession.load_from_file(assistant=assistant, session_id=cli_session_id)
-            
+            session, error = ChatSession.load_from_file(
+                assistant=assistant,
+                session_id=cli_session_id,
+                top_p=top_p,
+                top_k=top_k,
+                temperature=temperature,
+            )
+
             if error:
                 console.print_error(error)
                 # Fallback to new session
-                session = ChatSession(assistant=assistant)
+                session = ChatSession(
+                    assistant=assistant,
+                    top_p=top_p,
+                    top_k=top_k,
+                    temperature=temperature,
+                )
                 console.print_info(f"Rozpoczęto nową sesję z ID: {session.session_id}")
-            
+
             self._current_session = session
-            
+
             console.display_help(session.session_id)
             if not session.is_empty():
                 from commands.session_summary import display_history_summary
@@ -155,10 +171,15 @@ class SessionManager:
         else:
             print("Rozpoczynanie nowej sesji.")
             assistant = create_azor_assistant()
-            session = ChatSession(assistant=assistant)
+            session = ChatSession(
+                assistant=assistant,
+                top_p=top_p,
+                top_k=top_k,
+                temperature=temperature,
+            )
             self._current_session = session
             console.display_help(session.session_id)
-        
+
         return session
     
     def cleanup_and_save(self):

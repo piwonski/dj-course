@@ -25,7 +25,15 @@ class ChatSession:
     Encapsulates session ID, conversation history, assistant, and LLM chat session.
     """
     
-    def __init__(self, assistant: Assistant, session_id: str | None = None, history: List[Any] | None = None):
+    def __init__(
+        self,
+        assistant: Assistant,
+        session_id: str | None = None,
+        history: List[Any] | None = None,
+        top_p: float | None = None,
+        top_k: int | None = None,
+        temperature: float | None = None,
+    ):
         """
         Initialize a chat session.
         
@@ -40,6 +48,10 @@ class ChatSession:
         self._llm_client: Union[GeminiLLMClient, LlamaClient, None] = None
         self._llm_chat_session = None
         self._max_context_tokens = 32768
+        # Opcjonalne parametry próbkowania dla LLaMA (ignorowane przez inne silniki)
+        self._top_p = top_p
+        self._top_k = top_k
+        self._temperature = temperature
         self._initialize_llm_session()
     
     def _initialize_llm_session(self):
@@ -59,16 +71,27 @@ class ChatSession:
             console.print_info(SelectedClientClass.preparing_for_use_message())
             self._llm_client = SelectedClientClass.from_environment()
             console.print_info(self._llm_client.ready_for_use_message())
-        
+
+        # Tworzenie sesji czatu – parametry przekazywane zawsze
         self._llm_chat_session = self._llm_client.create_chat_session(
             system_instruction=self.assistant.system_prompt,
             history=self._history,
-            thinking_budget=0
+            thinking_budget=0,
+            top_p=self._top_p,
+            top_k=self._top_k,
+            temperature=self._temperature,
         )
     
     
     @classmethod
-    def load_from_file(cls, assistant: Assistant, session_id: str) -> tuple['ChatSession | None', str | None]:
+    def load_from_file(
+        cls,
+        assistant: Assistant,
+        session_id: str,
+        top_p: float | None = None,
+        top_k: int | None = None,
+        temperature: float | None = None,
+    ) -> tuple['ChatSession | None', str | None]:
         """
         Loads a session from disk.
         
@@ -83,8 +106,15 @@ class ChatSession:
         
         if error:
             return None, error
-        
-        session = cls(assistant=assistant, session_id=session_id, history=history)
+
+        session = cls(
+            assistant=assistant,
+            session_id=session_id,
+            history=history,
+            top_p=top_p,
+            top_k=top_k,
+            temperature=temperature,
+        )
         return session, None
     
     def save_to_file(self) -> tuple[bool, str | None]:

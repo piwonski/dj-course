@@ -16,7 +16,15 @@ class LlamaChatSession:
     Manages conversation history and provides send_message() and get_history() methods.
     """
     
-    def __init__(self, llama_model: Llama, system_instruction: str, history: Optional[List[Dict]] = None):
+    def __init__(
+        self,
+        llama_model: Llama,
+        system_instruction: str,
+        history: Optional[List[Dict]] = None,
+        top_p: Optional[float] = None,
+        top_k: Optional[int] = None,
+        temperature: Optional[float] = None,
+    ):
         """
         Initialize the LLaMA chat session.
         
@@ -28,6 +36,9 @@ class LlamaChatSession:
         self.llama_model = llama_model
         self.system_instruction = system_instruction
         self._history = history or []
+        self._top_p = top_p
+        self._top_k = top_k
+        self._temperature = temperature
         
     def send_message(self, text: str) -> Any:
         """
@@ -48,11 +59,23 @@ class LlamaChatSession:
         
         try:
             # Generate response using LLaMA
+            call_kwargs = {
+                "max_tokens": 512,
+                "stop": ["User:", "Assistant:", "\n\nUser:", "\n\nAssistant:"],
+                "echo": False,
+            }
+
+            # Opcjonalne parametry próbkowania, jeśli zostały przekazane
+            if self._top_p is not None:
+                call_kwargs["top_p"] = self._top_p
+            if self._top_k is not None:
+                call_kwargs["top_k"] = self._top_k
+            if self._temperature is not None:
+                call_kwargs["temperature"] = self._temperature
+
             output = self.llama_model(
                 prompt,
-                max_tokens=512,
-                stop=["User:", "Assistant:", "\n\nUser:", "\n\nAssistant:"],
-                echo=False,
+                **call_kwargs,
             )
             
             response_text = output["choices"][0]["text"].strip()
@@ -219,10 +242,15 @@ class LlamaClient:
             console.print_error(f"Błąd inicjalizacji modelu LLaMA: {e}")
             raise RuntimeError(f"Failed to initialize LLaMA model: {e}")
     
-    def create_chat_session(self, 
-                          system_instruction: str, 
-                          history: Optional[List[Dict]] = None,
-                          thinking_budget: int = 0) -> LlamaChatSession:
+    def create_chat_session(
+        self,
+        system_instruction: str,
+        history: Optional[List[Dict]] = None,
+        thinking_budget: int = 0,
+        top_p: Optional[float] = None,
+        top_k: Optional[int] = None,
+        temperature: Optional[float] = None,
+    ) -> LlamaChatSession:
         """
         Creates a new chat session with the specified configuration.
         
@@ -240,7 +268,10 @@ class LlamaClient:
         return LlamaChatSession(
             llama_model=self._llama_model,
             system_instruction=system_instruction,
-            history=history or []
+            history=history or [],
+            top_p=top_p,
+            top_k=top_k,
+            temperature=temperature,
         )
     
     def count_history_tokens(self, history: List[Dict]) -> int:

@@ -13,8 +13,8 @@ def init_chat():
     manager = get_session_manager()
     
     # Initialize session based on CLI args
-    cli_session_id = cli.args.get_session_id_from_cli()
-    session = manager.initialize_from_cli(cli_session_id)
+    cli_args = cli.args.parse_cli_args()
+    session = manager.initialize_from_cli(cli_args)
     
     # Register cleanup handler
     atexit.register(lambda: manager.cleanup_and_save())
