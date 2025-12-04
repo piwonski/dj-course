@@ -15,10 +15,29 @@ class OpenAIConfig(BaseModel):
     @validator("openai_api_key")
     def validate_api_key(cls, v: str) -> str:
         """
-        Upewnia się, że klucz API nie jest pusty ani nie zawiera tylko białych znaków.
+        Podstawowa walidacja klucza OpenAI:
+        - niepusty
+        - bez białych znaków
+        - tylko ASCII (bez emoji/polskich znaków – nagłówki HTTP)
         """
         if not v or v.strip() == "":
             raise ValueError("OPENAI_API_KEY nie może być pusty")
-        return v.strip()
+
+        key = v.strip()
+
+        # Klucz nie może zawierać spacji / nowych linii itp.
+        if any(ch.isspace() for ch in key):
+            raise ValueError("OPENAI_API_KEY nie może zawierać spacji ani znaków nowej linii")
+
+        # Zapobiega problemom z kodowaniem nagłówków HTTP
+        try:
+            key.encode("ascii")
+        except UnicodeEncodeError:
+            raise ValueError(
+                "OPENAI_API_KEY zawiera znaki spoza ASCII (np. emoji lub polskie znaki). "
+                "Użyj dokładnie takiego klucza, jaki podało OpenAI."
+            )
+
+        return key
 
 
