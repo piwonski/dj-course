@@ -20,7 +20,15 @@ class OpenAIChatSessionWrapper:
     This mirrors the behaviour of GeminiChatSessionWrapper.
     """
 
-    def __init__(self, client: OpenAI, model_name: str, system_instruction: str, history: Optional[List[Dict]] = None):
+    def __init__(
+        self,
+        client: OpenAI,
+        model_name: str,
+        system_instruction: str,
+        history: Optional[List[Dict]] = None,
+        top_p: Optional[float] = None,
+        temperature: Optional[float] = None,
+    ):
         """
         Initialize wrapper with OpenAI client and configuration.
 
@@ -29,11 +37,18 @@ class OpenAIChatSessionWrapper:
             model_name: Model name to use for chat completions
             system_instruction: System prompt / instruction for the assistant
             history: Previous conversation history in universal dict format
+            top_p: Nucleus sampling parameter (0-1). Controls diversity via nucleus sampling.
+            temperature: Sampling temperature (0-2). Higher values make output more random.
+        
+        Note:
+            OpenAI API does not support top_k parameter (unlike Gemini or LLaMA).
         """
         self._client = client
         self._model_name = model_name
         self._system_instruction = system_instruction
         self._history: List[Dict] = history or []
+        self._top_p = top_p
+        self._temperature = temperature
 
     def send_message(self, text: str) -> Any:
         """
@@ -68,10 +83,19 @@ class OpenAIChatSessionWrapper:
                 messages.append({"role": "assistant", "content": text_part})
 
         try:
-            completion = self._client.chat.completions.create(
-                model=self._model_name,
-                messages=messages,
-            )
+            # Prepare API call arguments
+            call_kwargs = {
+                "model": self._model_name,
+                "messages": messages,
+            }
+            
+            # Add optional sampling parameters if provided
+            if self._temperature is not None:
+                call_kwargs["temperature"] = self._temperature
+            if self._top_p is not None:
+                call_kwargs["top_p"] = self._top_p
+            
+            completion = self._client.chat.completions.create(**call_kwargs)
 
             response_text = completion.choices[0].message.content.strip()
 
@@ -184,24 +208,27 @@ class OpenAILLMClient:
             system_instruction: System role/prompt for the assistant
             history: Previous conversation history (optional, in universal dict format)
             thinking_budget: Unused (for interface compatibility)
-            top_p: Unused (for interface compatibility)
-            top_k: Unused (for interface compatibility)
-            temperature: Unused (for interface compatibility)
+            top_p: Nucleus sampling parameter (0-1). Controls diversity via nucleus sampling.
+            top_k: NOT SUPPORTED by OpenAI API (kept for interface compatibility only)
+            temperature: Sampling temperature (0-2). Higher values make output more random.
 
         Returns:
             OpenAIChatSessionWrapper with universal dictionary-based interface
+        
+        Note:
+            OpenAI API does not support top_k parameter. Only temperature and top_p are used.
         """
         # Unused parameters (for interface compatibility)
         _ = thinking_budget
-        _ = top_p
-        _ = top_k
-        _ = temperature
+        _ = top_k  # OpenAI API doesn't support top_k
         
         return OpenAIChatSessionWrapper(
             client=self._client,
             model_name=self.model_name,
             system_instruction=system_instruction,
             history=history or [],
+            top_p=top_p,
+            temperature=temperature,
         )
 
     def count_history_tokens(self, history: List[Dict]) -> int:
