@@ -14,6 +14,11 @@
 * `GEMINI_API_KEY` - klucz API Google Gemini
 * `MODEL_NAME` - nazwa modelu (np. "gemini-2.5-flash")
 
+**Dla OpenAI (ENGINE=OPEN_AI):**
+* `ENGINE=OPEN_AI`
+* `OPENAI_API_KEY` - klucz API OpenAI
+* `MODEL_NAME` - nazwa modelu (np. "gpt-4o-mini", "gpt-4.1", itp.)
+
 **Dla Llama (ENGINE=LLAMA_CPP):**
 * `ENGINE=LLAMA_CPP`
 * `MODEL_NAME` - nazwa modelu (np. "llama-3.1-8b-instruct")
@@ -36,6 +41,7 @@
 ### 🔒 Reguły i Zasady
 * **Wymagania Konfiguracyjne**: 
   - Dla `ENGINE=GEMINI`: wymagana zmienna `GEMINI_API_KEY`
+  - Dla `ENGINE=OPEN_AI`: wymagana zmienna `OPENAI_API_KEY`
   - Dla `ENGINE=LLAMA_CPP`: wymagana zmienna `LLAMA_MODEL_PATH`
 * **Walidacja Inputu**: Jeśli input zaczyna się od `/`, musi to być jedna z predefiniowanych komend slash, w przeciwnym razie jest odrzucany z błędem.
 * **Zapis Historii Sesji**: Sesja jest zapisywana do pliku `.json` **tylko wtedy**, gdy zawiera co najmniej dwie wiadomości (`len(history) >= 2`), tj. jedną pełną turę (User + Model).

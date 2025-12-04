@@ -8,8 +8,10 @@ from typing import Optional, List, Any, Dict
 
 from dotenv import load_dotenv
 from openai import OpenAI
+import tiktoken
 
 from cli import console
+from .openai_validation import OpenAIConfig
 
 
 class OpenAIChatSessionWrapper:
@@ -145,10 +147,13 @@ class OpenAILLMClient:
         """
         load_dotenv()
 
-        model_name = os.getenv("MODEL_NAME", "gpt-4o-mini")
-        api_key = os.getenv("OPENAI_API_KEY", "")
+        # Walidacja z Pydantic
+        config = OpenAIConfig(
+            model_name=os.getenv("MODEL_NAME", "gpt-4o-mini"),
+            openai_api_key=os.getenv("OPENAI_API_KEY", ""),
+        )
 
-        return cls(model_name=model_name, api_key=api_key)
+        return cls(model_name=config.model_name, api_key=config.openai_api_key)
 
     def _initialize_client(self) -> OpenAI:
         """
@@ -187,25 +192,40 @@ class OpenAILLMClient:
 
     def count_history_tokens(self, history: List[Dict]) -> int:
         """
-        Roughly counts tokens for the given conversation history.
-
-        Note: The official tiktoken-based counting is not wired here to avoid
-        adding extra heavy dependencies; this is a simple heuristic.
+        Counts tokens for the given conversation history using tiktoken.
         """
         if not history:
             return 0
 
         try:
-            total_chars = 0
+            # Build full text from history
+            text_parts: List[str] = []
             for message in history:
                 if "parts" in message and message["parts"]:
-                    total_chars += len(message["parts"][0].get("text", ""))
+                    text_parts.append(message["parts"][0].get("text", ""))
 
-            # Rough heuristic: ~4 characters per token
-            return total_chars // 4
+            full_text = " ".join(text_parts)
+
+            if not full_text:
+                return 0
+
+            # Try to get encoding for the configured model; fallback to a generic encoding
+            try:
+                encoder = tiktoken.encoding_for_model(self.model_name)
+            except Exception:
+                encoder = tiktoken.get_encoding("cl100k_base")
+
+            tokens = encoder.encode(full_text)
+            return len(tokens)
         except Exception as e:
             console.print_error(f"Błąd podczas liczenia tokenów OpenAI: {e}")
-            return 0
+            # Fallback: rough estimation (4 chars per token)
+            total_chars = sum(
+                len(msg["parts"][0].get("text", ""))
+                for msg in history
+                if "parts" in msg and msg["parts"]
+            )
+            return total_chars // 4
 
     def get_model_name(self) -> str:
         """Returns the currently configured model name."""
