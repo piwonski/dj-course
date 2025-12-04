@@ -5,6 +5,7 @@ from files import session_files
 from files.wal import append_to_wal
 from llm.gemini_client import GeminiLLMClient
 from llm.llama_client import LlamaClient
+from llm.openai_client import OpenAILLMClient
 from assistant import Assistant
 from cli import console
 
@@ -14,6 +15,7 @@ from cli import console
 ENGINE_MAPPING = {
     'LLAMA_CPP': LlamaClient,
     'GEMINI': GeminiLLMClient,
+    'OPEN_AI': OpenAILLMClient,
 }
 
 
