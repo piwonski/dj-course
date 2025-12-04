@@ -21,7 +21,7 @@
 
 **Dla Llama (ENGINE=LLAMA_CPP):**
 * `ENGINE=LLAMA_CPP`
-* `MODEL_NAME` - nazwa modelu (np. "llama-3.1-8b-instruct")
+* `LLAMA_MODEL_NAME` - nazwa modelu (np. "llama-3.1-8b-instruct")
 * `LLAMA_MODEL_PATH` - ścieżka do pliku modelu .gguf
 * `LLAMA_GPU_LAYERS` - liczba warstw GPU (opcjonalne)
 * `LLAMA_CONTEXT_SIZE` - rozmiar kontekstu (opcjonalne)

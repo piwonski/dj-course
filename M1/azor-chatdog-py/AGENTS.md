@@ -25,7 +25,7 @@ Azor the chatdog is a command-line interface chat application that provides an i
    - Create a `.env` file with your API keys and model settings
    - For Gemini: add `GEMINI_API_KEY` and `MODEL_NAME`
    - For OpenAI: add `OPENAI_API_KEY` and `MODEL_NAME`
-   - For LLaMA: add `LLAMA_MODEL_PATH` and model-specific parameters
+   - For LLaMA: add `LLAMA_MODEL_NAME`, `LLAMA_MODEL_PATH` and model-specific parameters
 
 ## 📂 Architecture Overview
 

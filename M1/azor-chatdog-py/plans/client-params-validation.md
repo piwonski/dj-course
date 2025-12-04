@@ -85,7 +85,7 @@ def from_environment(cls) -> 'LlamaClient':
     
     # Walidacja z Pydantic
     config = LlamaConfig(
-        model_name=os.getenv('MODEL_NAME', 'llama-3.1-8b-instruct'),
+        model_name=os.getenv('LLAMA_MODEL_NAME', 'llama-3.1-8b-instruct'),
         llama_model_path=os.getenv('LLAMA_MODEL_PATH', DEFAULT_MODEL_PATH),
         llama_gpu_layers=int(os.getenv('LLAMA_GPU_LAYERS', '1')),
         llama_context_size=int(os.getenv('LLAMA_CONTEXT_SIZE', '2048'))
