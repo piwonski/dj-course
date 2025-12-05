@@ -5,6 +5,7 @@
 * **`~/.azor/`**: Główny katalog roboczy aplikacji. Tworzony automatycznie.
 * **`~/.azor/<SESSION-ID>-log.json`**: Pliki historii sesji. Zapisywane są w nich tury konwersacji (rola, treść, czas) dla konkretnego ID sesji.
 * **`~/.azor/azor-wal.json`**: Dziennik Zapisu Transakcji (WAL). Plik śledzący każde żądanie i odpowiedź do modelu (prompt, response, tokens) niezależnie od sesji.
+* **`~/.azor/output/`**: Katalog na wygenerowane pliki eksportowe (PDF, audio, itp.).
 * **`chat_ascii.py`**: Zewnętrzny moduł zawierający funkcję `print_azor` do wyświetlania ASCII Artu na starcie.
 
 #### Konfiguracja Silnika
@@ -52,6 +53,13 @@
 
 ### ⌨️ Obsługiwane Komendy Slash
 * **`/exit`, `/quit`**: Kończy czat i uruchamia procedurę finalnego zapisu.
-* **`/sessions`**: Wyświetla listę wszystkich dostępnych ID sesji zapisanych w katalogu `~/.azor/`.
+* **`/session list`**: Wyświetla listę wszystkich dostępnych ID sesji zapisanych w katalogu `~/.azor/`.
+* **`/session display`**: Wyświetla pełną historię bieżącej sesji.
+* **`/session summary`**: Wyświetla podsumowanie historii (ostatnie 2 wiadomości).
+* **`/session pop`**: Usuwa ostatnią parę wiadomości (użytkownik + asystent) z historii.
+* **`/session clear`**: Czyści całą historię bieżącej sesji.
+* **`/session new`**: Tworzy nową sesję, zapisując poprzednią.
+* **`/session remove`**: Usuwa wybraną sesję z dysku.
 * **`/switch <ID>`**: Zapisuje bieżącą sesję, wczytuje i kontynuuje sesję o podanym ID. Po przełączeniu wyświetla podsumowanie historii.
+* **`/audio`**: Generuje plik audio z ostatniej odpowiedzi asystenta. Plik zapisywany jest w katalogu `~/.azor/output/`.
 * **`/help`**: Wyświetla instrukcję użytkowania komend i informacje o bieżącej sesji.

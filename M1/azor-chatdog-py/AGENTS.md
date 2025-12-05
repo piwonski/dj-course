@@ -84,8 +84,10 @@ Azor the chatdog is a command-line interface chat application that provides an i
 /session new         # Create a new session
 /session clear       # Clear current session
 /session pop         # Remove last message
+/session remove      # Remove a session from disk
 
 /switch <ID>         # Switch to existing session
+/audio               # Generate audio file from last assistant response
 /help                # Show help information
 /exit, /quit         # Exit the application
 ```
@@ -127,6 +129,7 @@ src/
 ├── pdf.py
 ├── commands/
 │   ├── __init__.py
+│   ├── audio.py
 │   ├── session_display.py
 │   ├── session_list.py
 │   ├── session_remove.py
