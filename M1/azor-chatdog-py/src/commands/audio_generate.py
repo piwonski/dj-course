@@ -45,7 +45,7 @@ def generate_audio_from_last_response(history: List[Dict], session_id: str, assi
     # Check if speaker reference file exists
     if not os.path.exists(TTS_SPEAKER_WAV):
         console.print_error(f"Plik referencyjny głosu nie istnieje: {TTS_SPEAKER_WAV}")
-        console.print_error("Ustaw zmienną środowiskową TTS_SPEAKER_WAV lub umieść plik sample-agent.wav w katalogu src/files/tts/")
+        console.print_error("Ustaw zmienną środowiskową TTS_SPEAKER_WAV lub umieść plik sample-agent.wav w katalogu src/files/tts/speakers/")
         return
 
     console.print_info("▶️  Uruchomienie generowania pliku audio...")    
