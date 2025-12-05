@@ -11,3 +11,4 @@ markdown
 coqui-tts
 torch
 rich
+pydub
