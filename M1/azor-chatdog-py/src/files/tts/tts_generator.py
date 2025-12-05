@@ -46,7 +46,7 @@ class TTSGenerator:
         else:
             return "cpu", "CPU"
     
-    def _initialize_model(self):
+    def initialize_model(self):
         """
         Lazy initialization of the TTS model.
         Called automatically on first use.
@@ -67,7 +67,7 @@ class TTSGenerator:
             console.print_info(f"✅ Model załadowany pomyślnie na {device.upper()}.")
         except Exception as e:
             console.print_error(f"❌ Błąd ładowania modelu TTS: {e}")
-            raise
+            raise    
     
     def generate_audio(
         self,
@@ -90,7 +90,7 @@ class TTSGenerator:
         """
         # Lazy initialization on first use
         if not self._initialized:
-            self._initialize_model()
+            self.initialize_model()
         
         if not self._tts_model:
             console.print_error("Model TTS nie został zainicjalizowany.")

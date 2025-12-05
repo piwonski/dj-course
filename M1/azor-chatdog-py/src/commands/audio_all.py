@@ -3,8 +3,59 @@ from files.config import OUTPUT_DIR, TEMP_AUDIO_DIR, ASSISTANT_SPEAKER_WAV, USER
 from cli import console
 import os
 import threading
+import time
 
-def concatenate_wav_files(input_files: List[str], output_path: str) -> bool:
+def _prepare_generation_tasks(history: List[Dict], session_id: str, assistant_name: str) -> List[Dict]:
+    """
+    Prepares generation tasks from conversation history.
+    
+    Args:
+        history: List of dictionaries in the format {"role": "user|model", "parts": [{"text": "..."}]}
+        session_id: The ID of the session
+        assistant_name: The name of the assistant
+        
+    Returns:
+        List of task dictionaries with idx, text, temp_path, speaker_wav, speaker_label
+    """
+    generation_tasks = []
+    
+    for idx, message in enumerate(history, 1):
+        role = message.get('role', '')
+        
+        # Extract text from message
+        text = ""
+        if 'parts' in message and message['parts']:
+            text = message['parts'][0].get('text', '')
+        
+        if not text:
+            console.print_info(f"   ⏭️  Pomijam wiadomość {idx} (pusta)")
+            continue
+        
+        # Determine speaker based on role
+        if role == 'model':
+            speaker_wav = ASSISTANT_SPEAKER_WAV
+            speaker_label = assistant_name
+        elif role == 'user':
+            speaker_wav = USER_SPEAKER_WAV
+            speaker_label = "Użytkownik"
+        else:
+            console.print_info(f"   ⏭️  Pomijam wiadomość {idx} (nieznana rola: {role})")
+            continue
+        
+        # Generate temporary filename
+        temp_filename = f"{session_id}-temp-{idx:04d}.wav"
+        temp_path = os.path.join(TEMP_AUDIO_DIR, temp_filename)
+        
+        generation_tasks.append({
+            "text": text,
+            "temp_path": temp_path,
+            "speaker_wav": speaker_wav,
+            "speaker_label": speaker_label
+        })
+    
+    return generation_tasks
+
+def _concatenate_wav_files(input_files: List[str], output_path: str) -> bool:
     """
     Concatenates multiple WAV files into one, normalizing audio parameters.
     Uses pydub to handle different sample rates, channels, and bit depths.
@@ -103,75 +154,51 @@ def generate_audio_from_full_conversation(history: List[Dict], session_id: str, 
     from files.tts.animate import run_tts_animation
     
     tts_generator = TTSGenerator()
-    temp_files = []
-    failed_temp_files = set()
     
-    # Generate audio for each message
-    for idx, message in enumerate(history, 1):
-        role = message.get('role', '')
-        
-        # Extract text from message
-        text = ""
-        if 'parts' in message and message['parts']:
-            text = message['parts'][0].get('text', '')
-        
-        if not text:
-            console.print_info(f"   ⏭️  Pomijam wiadomość {idx} (pusta)")
-            continue
-        
-        # Determine speaker based on role
-        if role == 'model':
-            speaker_wav = ASSISTANT_SPEAKER_WAV
-            speaker_label = assistant_name
-        elif role == 'user':
-            speaker_wav = USER_SPEAKER_WAV
-            speaker_label = "Użytkownik"
-        else:
-            console.print_info(f"   ⏭️  Pomijam wiadomość {idx} (nieznana rola: {role})")
-            continue
-        
-        # Generate temporary filename
-        temp_filename = f"{session_id}-temp-{idx:04d}.wav"
-        temp_path = os.path.join(TEMP_AUDIO_DIR, temp_filename)
-        temp_files.append(temp_path)
-        
-        console.print_info(f"   🎤 Generowanie audio {idx}/{len(history)}: {speaker_label}...")
-        
-        # Generate audio in thread with animation
-        generation_result = {"success": False, "error": None}
-        
-        def generate_audio_thread():
-            """Thread for asynchronous audio generation."""
+    # Prepare all generation tasks
+    generation_tasks = _prepare_generation_tasks(history, session_id, assistant_name)
+    
+    if not generation_tasks:
+        console.print_error("❌ Brak wiadomości do wygenerowania.")
+        return
+    
+    # Store results for checking after generation
+    failed_temp_files = set()
+
+    tts_generator.initialize_model()
+    
+    # Generate all audio files in a single thread
+    def generate_all_audio_thread():
+        """Thread that generates all audio files sequentially."""
+        for idx, task in enumerate(generation_tasks, 1):
+            console.print_info(f"   🎤 Generowanie audio {idx}/{len(generation_tasks)}: {task['speaker_label']}...")
             try:
                 success = tts_generator.generate_audio(
-                    text=text,
-                    output_path=temp_path,
-                    speaker_wav_path=speaker_wav,
+                    text=task["text"],
+                    output_path=task["temp_path"],
+                    speaker_wav_path=task["speaker_wav"],
                     language="pl"
                 )
-                generation_result["success"] = success
+                if not success:
+                    console.print_error(f"   ❌ Nie udało się wygenerować audio dla wiadomości {idx}")
+                    failed_temp_files.add(task["temp_path"])
             except Exception as e:
-                generation_result["error"] = str(e)
-                generation_result["success"] = False
+                console.print_error(f"   ❌ Błąd podczas generowania audio dla wiadomości {idx}: {e}")
+                failed_temp_files.add(task["temp_path"])
         
-        generation_thread = threading.Thread(target=generate_audio_thread)
-        generation_thread.start()
-        
-        # Show animation while generating
-        run_tts_animation(
-            target_text=f" GENEROWANIE AUDIO {idx}/{len(history)}... ",
-            thread_to_monitor=generation_thread
-        )
-        
-        # Check result
-        if generation_result["error"]:
-            console.print_error(f"   ❌ Błąd podczas generowania audio dla wiadomości {idx}: {generation_result['error']}")
-            failed_temp_files.add(temp_path)
-        elif not generation_result["success"]:
-            console.print_error(f"   ❌ Nie udało się wygenerować audio dla wiadomości {idx}")
-            failed_temp_files.add(temp_path)
+    
+    # Start generation in a separate thread
+    generation_thread = threading.Thread(target=generate_all_audio_thread)
+    generation_thread.start()
+
+    # Show animation while generating
+    elapsed_time = run_tts_animation(
+        target_text=" GENEROWANIE PLIKÓW AUDIO... ",
+        thread_to_monitor=generation_thread
+    )
     
     # Filter out failed files
+    temp_files = [task["temp_path"] for task in generation_tasks]
     successful_temp_files = [f for f in temp_files if f not in failed_temp_files]
     
     if not successful_temp_files:
@@ -181,7 +208,7 @@ def generate_audio_from_full_conversation(history: List[Dict], session_id: str, 
     # Concatenate all audio files
     console.print_info(f"🔗 Łączenie {len(successful_temp_files)} plików audio w jeden...")
     
-    concatenation_success = concatenate_wav_files(successful_temp_files, output_path)
+    concatenation_success = _concatenate_wav_files(successful_temp_files, output_path)
     
     if not concatenation_success:
         console.print_error("❌ Nie udało się połączyć plików audio.")
@@ -199,6 +226,5 @@ def generate_audio_from_full_conversation(history: List[Dict], session_id: str, 
     # Report results
     if failed_temp_files:
         console.print_info(f"⚠️  Uwaga: {len(failed_temp_files)} wiadomości nie zostało wygenerowanych.")
-    
-    file_size = os.path.getsize(output_path) / (1024 * 1024)  # Size in MB
-    console.print_info(f"✅ Sukces! Plik '{output_path}' został wygenerowany ({file_size:.2f} MB).")
+
+    console.print_info(f"✅ Sukces! Plik '{output_path}' został wygenerowany w {elapsed_time:.2f}s.")
