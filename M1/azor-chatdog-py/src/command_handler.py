@@ -5,8 +5,9 @@ from commands.session_display import display_full_session
 from commands.session_to_pdf import export_session_to_pdf
 from commands.session_remove import remove_session_command
 from commands.audio_generate import generate_audio_from_last_response
+from commands.audio_all import generate_audio_from_full_conversation
 
-VALID_SLASH_COMMANDS = ['/exit', '/quit', '/switch', '/help', '/session', '/pdf', '/audio']
+VALID_SLASH_COMMANDS = ['/exit', '/quit', '/switch', '/help', '/session', '/pdf', '/audio', '/audio-all']
 
 def handle_command(user_input: str) -> bool:
     """
@@ -77,6 +78,10 @@ def handle_command(user_input: str) -> bool:
     elif command == '/audio':
         current = manager.get_current_session()
         generate_audio_from_last_response(current.get_history(), current.session_id, current.assistant_name)
+
+    elif command == '/audio-all':
+        current = manager.get_current_session()
+        generate_audio_from_full_conversation(current.get_history(), current.session_id, current.assistant_name)
 
     return False
 
