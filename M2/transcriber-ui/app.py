@@ -9,6 +9,8 @@ import queue
 import sys
 import logging
 import logging.handlers
+import json
+from datetime import datetime
 from typing import TextIO
 
 # --- Global Configuration ---
@@ -91,6 +93,36 @@ def output_filename()  -> str:
     """Generates output filename for transcription results."""
     os.makedirs('output', exist_ok=True)
     return f"output/recording-{int(time.time())}.wav"
+
+def get_json_filename(wav_filename: str) -> str:
+    """Generates JSON filename based on WAV filename."""
+    return wav_filename.replace('.wav', '.json')
+
+def save_transcription_metadata(wav_filename: str, transcription: str, recording_date: datetime = None) -> None:
+    """
+    Saves transcription metadata to JSON file.
+    
+    Args:
+        wav_filename: Path to the WAV file
+        transcription: The transcribed text
+        recording_date: Date of recording (defaults to current time if not provided)
+    """
+    if recording_date is None:
+        recording_date = datetime.now()
+    
+    json_filename = get_json_filename(wav_filename)
+    metadata = {
+        "date": recording_date.isoformat(),
+        "filename": os.path.basename(wav_filename),
+        "transcription": transcription
+    }
+    
+    try:
+        with open(json_filename, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=2)
+        logging.info(f"Metadata saved to {json_filename}")
+    except Exception as e:
+        logging.error(f"Failed to save metadata to JSON: {e}", exc_info=True)
 
 def transcribe_audio(audio_path: str, model_name: str) -> str:
     """
@@ -194,6 +226,8 @@ class AudioRecorderApp:
         self.recording = False
         self.start_time = None
         self.record_timer_id = None 
+        self.current_wav_filename = None  # Store current recording filename
+        self.recording_date = None  # Store recording date
 
         # Queue for inter-thread communication
         self.transcription_queue = queue.Queue()
@@ -299,6 +333,7 @@ class AudioRecorderApp:
         self.recording = True
         self.frames = []
         self.start_time = time.time()
+        self.recording_date = datetime.now()  # Store recording start date
         logging.info("Recording started.")
         
         try:
@@ -367,6 +402,7 @@ class AudioRecorderApp:
         logging.info("Audio stream closed.")
 
         WAVE_OUTPUT_FILENAME = output_filename()
+        self.current_wav_filename = WAVE_OUTPUT_FILENAME  # Store filename for JSON saving
         
         # Update button status for user feedback
         self.record_button.config(text="Saving...", state=tk.DISABLED) 
@@ -437,9 +473,20 @@ class AudioRecorderApp:
                 messagebox.showerror("Transcription Failed", "Transcription returned an error. Check logs for details.")
             else:
                 # Copy to clipboard upon successful transcription
-                self.copy_to_clipboard(result) 
+                self.copy_to_clipboard(result)
+                
+                # Save transcription metadata to JSON file
+                if self.current_wav_filename and self.recording_date:
+                    save_transcription_metadata(
+                        self.current_wav_filename, 
+                        result, 
+                        self.recording_date
+                    )
                 
             self.record_button.config(text="Record", state=tk.NORMAL) # Return to normal state
+            # Clear stored filename and date after processing
+            self.current_wav_filename = None
+            self.recording_date = None
 
         except queue.Empty:
             pass
