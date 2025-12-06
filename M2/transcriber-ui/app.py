@@ -680,12 +680,48 @@ class AudioRecorderApp:
         self.history_list_frame.update_idletasks()
         self.history_list_canvas.configure(scrollregion=self.history_list_canvas.bbox("all"))
     
+    def format_date(self, date_str: str) -> str:
+        """Formats ISO date string to human-readable format."""
+        try:
+            # Parse ISO format date
+            dt = datetime.fromisoformat(date_str)
+            
+            # Polish month names
+            months = [
+                'stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca',
+                'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'
+            ]
+            
+            # Format: "6 grudnia 2025, 16:20"
+            formatted_date = f"{dt.day} {months[dt.month - 1]} {dt.year}, {dt.hour:02d}:{dt.minute:02d}"
+            return formatted_date
+        except (ValueError, AttributeError) as e:
+            logging.warning(f"Could not parse date '{date_str}': {e}")
+            return date_str  # Return original if parsing fails
+    
     def show_transcription(self, data):
         """Displays the full transcription text in the right panel."""
         self.selected_transcription = data
         self.history_display.config(state=tk.NORMAL)
         self.history_display.delete('1.0', tk.END)
+        
+        # Format and display date if available
+        if 'date' in data and data['date']:
+            formatted_date = self.format_date(data['date'])
+            date_label = f"Data nagrania: {formatted_date}"
+            
+            # Add date
+            self.history_display.insert(tk.END, date_label)
+            self.history_display.insert(tk.END, "\n")
+            
+            # Add separator (20 characters of ━)
+            separator = "━" * 20
+            self.history_display.insert(tk.END, separator)
+            self.history_display.insert(tk.END, "\n\n")
+        
+        # Add transcription text
         self.history_display.insert(tk.END, data['transcription'])
+        
         self.history_display.config(state=tk.DISABLED)
         logging.info(f"Displayed transcription from {data['filename']}")
     
