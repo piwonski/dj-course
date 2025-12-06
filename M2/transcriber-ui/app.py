@@ -302,6 +302,7 @@ class AudioRecorderApp:
         # Store currently selected transcription
         self.selected_transcription = None
         self.currently_playing = None  # Track currently playing audio
+        self.play_buttons = {}  # Store play/stop button references by wav_file path
         
         # Load transcriptions on init
         self.load_transcription_history()
@@ -548,6 +549,9 @@ class AudioRecorderApp:
         for widget in self.history_list_frame.winfo_children():
             widget.destroy()
         
+        # Clear play buttons dictionary
+        self.play_buttons = {}
+        
         # Find all JSON files in output directory
         json_files = glob.glob("output/recording-*.json")
         # Sort by modification time, newest first
@@ -615,21 +619,27 @@ class AudioRecorderApp:
                 button_frame = tk.Frame(item_frame, bg="#2E2E2E")
                 button_frame.pack(side=tk.RIGHT, padx=5)
                 
-                # Play button
+                wav_file = text_label.transcription_data['wav_file']
+                is_currently_playing = (self.currently_playing == wav_file)
+                
+                # Play/Stop button
                 play_btn = tk.Button(
                     button_frame,
-                    text="▶",
+                    text="⏸" if is_currently_playing else "▶",
                     font=('Arial', 10),
-                    bg='#4CAF50',
+                    bg='#FF9800' if is_currently_playing else '#4CAF50',
                     fg='white',
                     relief=tk.RAISED,
                     bd=2,
                     padx=8,
                     pady=5,
                     cursor='hand2',
-                    command=lambda wav_file=text_label.transcription_data['wav_file']: self.play_audio(wav_file)
+                    command=lambda wav=wav_file: self.toggle_audio_playback(wav)
                 )
                 play_btn.pack(side=tk.LEFT, padx=2)
+                
+                # Store button reference for later updates
+                self.play_buttons[wav_file] = play_btn
                 
                 # Delete button
                 delete_btn = tk.Button(
@@ -679,6 +689,40 @@ class AudioRecorderApp:
         self.history_display.config(state=tk.DISABLED)
         logging.info(f"Displayed transcription from {data['filename']}")
     
+    def toggle_audio_playback(self, wav_file: str):
+        """Toggles audio playback - plays if stopped, stops if playing."""
+        if self.currently_playing == wav_file:
+            # Currently playing this file - stop it
+            self.stop_audio()
+        else:
+            # Not playing or playing different file - start playing this one
+            self.play_audio(wav_file)
+    
+    def stop_audio(self):
+        """Stops the currently playing audio."""
+        if not self.currently_playing:
+            return
+        
+        try:
+            if PYGAME_AVAILABLE:
+                pygame.mixer.music.stop()
+            logging.info(f"Stopped audio playback")
+        except Exception as e:
+            logging.error(f"Error stopping audio: {e}", exc_info=True)
+        finally:
+            self.currently_playing = None
+            self.update_play_buttons()
+    
+    def update_play_buttons(self):
+        """Updates all play/stop buttons to reflect current playback state."""
+        for wav_file, button in self.play_buttons.items():
+            if self.currently_playing == wav_file:
+                # This file is playing - show stop button
+                button.config(text="⏸", bg='#FF9800')
+            else:
+                # This file is not playing - show play button
+                button.config(text="▶", bg='#4CAF50')
+    
     def play_audio(self, wav_file: str):
         """Plays the audio file using pygame."""
         if not PYGAME_AVAILABLE:
@@ -693,7 +737,8 @@ class AudioRecorderApp:
         # Stop currently playing audio if any
         if self.currently_playing:
             try:
-                pygame.mixer.music.stop()
+                if PYGAME_AVAILABLE:
+                    pygame.mixer.music.stop()
             except:
                 pass
         
@@ -707,11 +752,18 @@ class AudioRecorderApp:
             self.currently_playing = wav_file
             logging.info(f"Playing audio: {wav_file}")
             
+            # Update play buttons immediately
+            self.update_play_buttons()
+            
             # Monitor playback in a separate thread
             def monitor_playback():
-                while pygame.mixer.music.get_busy():
+                while pygame.mixer.music.get_busy() and self.currently_playing == wav_file:
                     time.sleep(0.1)
-                self.currently_playing = None
+                # Playback finished or was stopped
+                if self.currently_playing == wav_file:
+                    self.currently_playing = None
+                    # Update buttons in main thread
+                    self.master.after(0, self.update_play_buttons)
             
             threading.Thread(target=monitor_playback, daemon=True).start()
             
@@ -719,6 +771,7 @@ class AudioRecorderApp:
             messagebox.showerror("Playback Error", f"Failed to play audio: {e}")
             logging.error(f"Error playing audio {wav_file}: {e}", exc_info=True)
             self.currently_playing = None
+            self.update_play_buttons()
     
     def delete_transcription(self, json_file: str, wav_file: str):
         """Deletes both the JSON and WAV files for a transcription."""
@@ -740,11 +793,10 @@ class AudioRecorderApp:
             if os.path.exists(wav_file):
                 # Stop playback if this file is currently playing
                 if self.currently_playing == wav_file:
-                    try:
-                        pygame.mixer.music.stop()
-                    except:
-                        pass
-                    self.currently_playing = None
+                    self.stop_audio()
+                # Remove button reference
+                if wav_file in self.play_buttons:
+                    del self.play_buttons[wav_file]
                 os.remove(wav_file)
                 logging.info(f"Deleted WAV file: {wav_file}")
             
