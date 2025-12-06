@@ -11,7 +11,14 @@ import logging
 import logging.handlers
 import json
 from datetime import datetime
-from typing import TextIO
+from typing import TextIO, Optional
+import glob
+try:
+    import pygame
+    PYGAME_AVAILABLE = True
+except ImportError:
+    PYGAME_AVAILABLE = False
+    logging.warning("pygame not available. Audio playback will be disabled. Install with: pip install pygame")
 
 # --- Global Configuration ---
 APP_TITLE = "Azor Transcriber"
@@ -244,11 +251,44 @@ class AudioRecorderApp:
         self.history_frame = tk.Frame(self.notebook, bg="#121212") # Consistent dark background
         self.notebook.add(self.history_frame, text='Transcription History')
         
-        # Content for History Tab: Last Transcription Display
-        tk.Label(self.history_frame, text="Last transcription:", font=('Arial', 14, 'bold'), fg='white', bg="#121212").pack(pady=(10, 5))
+        # Create two-panel layout using PanedWindow
+        self.history_paned = tk.PanedWindow(self.history_frame, orient=tk.HORIZONTAL, bg="#121212", sashwidth=5, sashrelief=tk.RAISED)
+        self.history_paned.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        self.history_display = tk.Text(self.history_frame, 
-                                       height=10, 
+        # Left Panel: List of transcriptions
+        left_panel = tk.Frame(self.history_paned, bg="#121212")
+        self.history_paned.add(left_panel, minsize=300)
+        
+        tk.Label(left_panel, text="Transcription List", font=('Arial', 14, 'bold'), fg='white', bg="#121212").pack(pady=(5, 10))
+        
+        # Scrollable list frame
+        list_container = tk.Frame(left_panel, bg="#121212")
+        list_container.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
+        # Scrollbar for list
+        list_scrollbar = tk.Scrollbar(list_container)
+        list_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Canvas for scrolling
+        self.history_list_canvas = tk.Canvas(list_container, bg="#1E1E1E", yscrollcommand=list_scrollbar.set, highlightthickness=0)
+        list_scrollbar.config(command=self.history_list_canvas.yview)
+        self.history_list_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Frame inside canvas for items
+        self.history_list_frame = tk.Frame(self.history_list_canvas, bg="#1E1E1E")
+        self.history_list_canvas_window = self.history_list_canvas.create_window((0, 0), window=self.history_list_frame, anchor="nw")
+        
+        # Bind canvas resize
+        self.history_list_canvas.bind('<Configure>', self._on_canvas_configure)
+        self.history_list_frame.bind('<Configure>', self._on_frame_configure)
+        
+        # Right Panel: Full transcription text
+        right_panel = tk.Frame(self.history_paned, bg="#121212")
+        self.history_paned.add(right_panel, minsize=300)
+        
+        tk.Label(right_panel, text="Transcription Text", font=('Arial', 14, 'bold'), fg='white', bg="#121212").pack(pady=(5, 10))
+        
+        self.history_display = tk.Text(right_panel, 
                                        wrap=tk.WORD, 
                                        font=('Arial', 11),
                                        relief=tk.SUNKEN, 
@@ -257,12 +297,14 @@ class AudioRecorderApp:
                                        insertbackground='white', 
                                        state=tk.DISABLED 
                                       )
-        self.history_display.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
+        self.history_display.pack(pady=5, padx=10, fill=tk.BOTH, expand=True)
         
-        # Placeholder text in history
-        self.history_display.config(state=tk.NORMAL)
-        self.history_display.insert(tk.END, "Under construction...")
-        self.history_display.config(state=tk.DISABLED)
+        # Store currently selected transcription
+        self.selected_transcription = None
+        self.currently_playing = None  # Track currently playing audio
+        
+        # Load transcriptions on init
+        self.load_transcription_history()
 
 
         # 3. Settings Tab
@@ -462,12 +504,6 @@ class AudioRecorderApp:
             self.transcription_display.insert(tk.END, result)
             self.transcription_display.config(state=tk.DISABLED)
             
-            # 2. Update History tab (last output)
-            self.history_display.config(state=tk.NORMAL)
-            self.history_display.delete('1.0', tk.END)
-            self.history_display.insert(tk.END, "Under construction..." + result)
-            self.history_display.config(state=tk.DISABLED)
-            
             if "ERROR" in result:
                 logging.warning("Transcription failed with error message.")
                 messagebox.showerror("Transcription Failed", "Transcription returned an error. Check logs for details.")
@@ -482,6 +518,8 @@ class AudioRecorderApp:
                         result, 
                         self.recording_date
                     )
+                    # Reload history list to show new transcription
+                    self.load_transcription_history()
                 
             self.record_button.config(text="Record", state=tk.NORMAL) # Return to normal state
             # Clear stored filename and date after processing
@@ -493,11 +531,251 @@ class AudioRecorderApp:
         finally:
             self.master.after(100, self.check_transcription_queue)
 
+    def _on_canvas_configure(self, event):
+        """Update scroll region when canvas is configured."""
+        self.history_list_canvas.configure(scrollregion=self.history_list_canvas.bbox("all"))
+        # Update canvas window width
+        canvas_width = event.width
+        self.history_list_canvas.itemconfig(self.history_list_canvas_window, width=canvas_width)
+    
+    def _on_frame_configure(self, event):
+        """Update scroll region when frame is configured."""
+        self.history_list_canvas.configure(scrollregion=self.history_list_canvas.bbox("all"))
+    
+    def load_transcription_history(self):
+        """Loads all transcription JSON files and displays them in the list."""
+        # Clear existing items
+        for widget in self.history_list_frame.winfo_children():
+            widget.destroy()
+        
+        # Find all JSON files in output directory
+        json_files = glob.glob("output/recording-*.json")
+        # Sort by modification time, newest first
+        json_files.sort(key=os.path.getmtime, reverse=True)
+        
+        if not json_files:
+            no_items_label = tk.Label(
+                self.history_list_frame,
+                text="No transcriptions yet",
+                font=('Arial', 11),
+                fg='gray',
+                bg='#1E1E1E',
+                anchor='w',
+                padx=10,
+                pady=20
+            )
+            no_items_label.pack(fill=tk.X)
+            return
+        
+        for json_file in json_files:
+            try:
+                with open(json_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                
+                transcription_text = data.get('transcription', '')
+                filename = data.get('filename', os.path.basename(json_file))
+                date_str = data.get('date', '')
+                
+                # Get first words (first 50 characters)
+                preview = transcription_text[:50] + "..." if len(transcription_text) > 50 else transcription_text
+                if not preview.strip():
+                    preview = "(Empty transcription)"
+                
+                # Create item frame
+                item_frame = tk.Frame(self.history_list_frame, bg="#2E2E2E", relief=tk.RAISED, bd=1)
+                item_frame.pack(fill=tk.X, padx=5, pady=3)
+                
+                # Text preview (clickable)
+                text_label = tk.Label(
+                    item_frame,
+                    text=preview,
+                    font=('Arial', 10),
+                    fg='white',
+                    bg='#2E2E2E',
+                    anchor='w',
+                    justify='left',
+                    padx=10,
+                    pady=8,
+                    cursor='hand2',
+                    wraplength=200
+                )
+                text_label.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+                
+                # Store full data in label for click handler
+                text_label.transcription_data = {
+                    'json_file': json_file,
+                    'wav_file': json_file.replace('.json', '.wav'),
+                    'transcription': transcription_text,
+                    'filename': filename,
+                    'date': date_str
+                }
+                text_label.bind('<Button-1>', lambda e, data=text_label.transcription_data: self.show_transcription(data))
+                
+                # Button frame
+                button_frame = tk.Frame(item_frame, bg="#2E2E2E")
+                button_frame.pack(side=tk.RIGHT, padx=5)
+                
+                # Play button
+                play_btn = tk.Button(
+                    button_frame,
+                    text="▶",
+                    font=('Arial', 10),
+                    bg='#4CAF50',
+                    fg='white',
+                    relief=tk.RAISED,
+                    bd=2,
+                    padx=8,
+                    pady=5,
+                    cursor='hand2',
+                    command=lambda wav_file=text_label.transcription_data['wav_file']: self.play_audio(wav_file)
+                )
+                play_btn.pack(side=tk.LEFT, padx=2)
+                
+                # Delete button
+                delete_btn = tk.Button(
+                    button_frame,
+                    text="✕",
+                    font=('Arial', 10, 'bold'),
+                    bg='#F44336',
+                    fg='white',
+                    relief=tk.RAISED,
+                    bd=2,
+                    padx=8,
+                    pady=5,
+                    cursor='hand2',
+                    command=lambda json_file=json_file, wav_file=text_label.transcription_data['wav_file']: self.delete_transcription(json_file, wav_file)
+                )
+                delete_btn.pack(side=tk.LEFT, padx=2)
+                
+                # Hover effects
+                def on_enter(event):
+                    item_frame.config(bg="#3E3E3E")
+                    text_label.config(bg="#3E3E3E")
+                    button_frame.config(bg="#3E3E3E")
+                
+                def on_leave(event):
+                    item_frame.config(bg="#2E2E2E")
+                    text_label.config(bg="#2E2E2E")
+                    button_frame.config(bg="#2E2E2E")
+                
+                item_frame.bind("<Enter>", on_enter)
+                item_frame.bind("<Leave>", on_leave)
+                text_label.bind("<Enter>", on_enter)
+                text_label.bind("<Leave>", on_leave)
+                
+            except Exception as e:
+                logging.error(f"Error loading transcription {json_file}: {e}", exc_info=True)
+        
+        # Update scroll region
+        self.history_list_frame.update_idletasks()
+        self.history_list_canvas.configure(scrollregion=self.history_list_canvas.bbox("all"))
+    
+    def show_transcription(self, data):
+        """Displays the full transcription text in the right panel."""
+        self.selected_transcription = data
+        self.history_display.config(state=tk.NORMAL)
+        self.history_display.delete('1.0', tk.END)
+        self.history_display.insert(tk.END, data['transcription'])
+        self.history_display.config(state=tk.DISABLED)
+        logging.info(f"Displayed transcription from {data['filename']}")
+    
+    def play_audio(self, wav_file: str):
+        """Plays the audio file using pygame."""
+        if not PYGAME_AVAILABLE:
+            messagebox.showwarning("Audio Playback", "pygame is not installed. Install it with: pip install pygame")
+            return
+        
+        if not os.path.exists(wav_file):
+            messagebox.showerror("Error", f"Audio file not found: {wav_file}")
+            logging.error(f"Audio file not found: {wav_file}")
+            return
+        
+        # Stop currently playing audio if any
+        if self.currently_playing:
+            try:
+                pygame.mixer.music.stop()
+            except:
+                pass
+        
+        try:
+            # Initialize pygame mixer if not already done
+            if not pygame.mixer.get_init():
+                pygame.mixer.init()
+            
+            pygame.mixer.music.load(wav_file)
+            pygame.mixer.music.play()
+            self.currently_playing = wav_file
+            logging.info(f"Playing audio: {wav_file}")
+            
+            # Monitor playback in a separate thread
+            def monitor_playback():
+                while pygame.mixer.music.get_busy():
+                    time.sleep(0.1)
+                self.currently_playing = None
+            
+            threading.Thread(target=monitor_playback, daemon=True).start()
+            
+        except Exception as e:
+            messagebox.showerror("Playback Error", f"Failed to play audio: {e}")
+            logging.error(f"Error playing audio {wav_file}: {e}", exc_info=True)
+            self.currently_playing = None
+    
+    def delete_transcription(self, json_file: str, wav_file: str):
+        """Deletes both the JSON and WAV files for a transcription."""
+        response = messagebox.askyesno(
+            "Delete Transcription",
+            f"Are you sure you want to delete this transcription?\n\nFile: {os.path.basename(json_file)}"
+        )
+        
+        if not response:
+            return
+        
+        try:
+            # Delete JSON file
+            if os.path.exists(json_file):
+                os.remove(json_file)
+                logging.info(f"Deleted JSON file: {json_file}")
+            
+            # Delete WAV file
+            if os.path.exists(wav_file):
+                # Stop playback if this file is currently playing
+                if self.currently_playing == wav_file:
+                    try:
+                        pygame.mixer.music.stop()
+                    except:
+                        pass
+                    self.currently_playing = None
+                os.remove(wav_file)
+                logging.info(f"Deleted WAV file: {wav_file}")
+            
+            # If this was the selected transcription, clear the display
+            if self.selected_transcription and self.selected_transcription.get('json_file') == json_file:
+                self.history_display.config(state=tk.NORMAL)
+                self.history_display.delete('1.0', tk.END)
+                self.history_display.config(state=tk.DISABLED)
+                self.selected_transcription = None
+            
+            # Reload the list
+            self.load_transcription_history()
+            
+            messagebox.showinfo("Success", "Transcription deleted successfully.")
+            
+        except Exception as e:
+            messagebox.showerror("Delete Error", f"Failed to delete transcription: {e}")
+            logging.error(f"Error deleting transcription {json_file}: {e}", exc_info=True)
+    
     def on_closing(self):
         """Handles clean application shutdown."""
         logging.info("Closing application...")
         if self.recording:
-            self.stop_recording() 
+            self.stop_recording()
+        
+        # Stop audio playback if any
+        if self.currently_playing and PYGAME_AVAILABLE:
+            try:
+                pygame.mixer.music.stop()
+            except:
+                pass
         
         # Terminate PyAudio
         if self.p:

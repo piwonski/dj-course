@@ -2,4 +2,5 @@ PyAudio
 transformers
 torch
 librosa
+pygame
 pyinstaller
