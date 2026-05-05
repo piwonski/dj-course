@@ -41,7 +41,11 @@ def main_loop():
             
             # Send message (handles WAL logging internally)
             response = session.send_message(user_input)
-            
+
+            # Auto-generate title after first exchange if not set
+            if not session.title:
+                session.generate_title(user_input, response.text)
+
             # Get token information
             total_tokens, remaining_tokens, max_tokens = session.get_token_info()
 

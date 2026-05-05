@@ -228,14 +228,25 @@ class GeminiLLMClient:
             console.print_error(f"Błąd podczas liczenia tokenów: {e}")
             return 0
     
+    def generate_once(self, prompt: str) -> str:
+        """Makes a single, stateless generation without creating a chat session."""
+        try:
+            response = self._client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+            )
+            return response.text.strip()
+        except Exception:
+            return ""
+
     def get_model_name(self) -> str:
         """Returns the currently configured model name."""
         return self.model_name
-    
+
     def is_available(self) -> bool:
         """
         Checks if the LLM service is available and properly configured.
-        
+
         Returns:
             True if client is properly initialized and has API key
         """

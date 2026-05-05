@@ -257,6 +257,21 @@ class ChatSession:
         """Sets the session title."""
         self.title = title.strip() or None
 
+    def generate_title(self, user_message: str, response_text: str):
+        """Generates and sets a title based on the first exchange. No-op if title already set."""
+        if self.title:
+            return
+        prompt = (
+            "Na podstawie poniższej krótkiej rozmowy wygeneruj tytuł w maksymalnie 5 słowach. "
+            "Odpowiedź: tylko tytuł, bez cudzysłowów, bez dodatkowego tekstu.\n\n"
+            f"Użytkownik: {user_message}\n"
+            f"Asystent: {response_text}"
+        )
+        generated = self._llm_client.generate_once(prompt)
+        if generated:
+            self.title = generated
+            self.save_to_file()
+
     @property
     def display_title(self) -> str:
         """Returns title if set, otherwise session_id as fallback."""

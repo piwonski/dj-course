@@ -268,6 +268,17 @@ class OpenAILLMClient:
             )
             return total_chars // 4
 
+    def generate_once(self, prompt: str) -> str:
+        """Makes a single, stateless generation without creating a chat session."""
+        try:
+            completion = self._client.chat.completions.create(
+                model=self.model_name,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return completion.choices[0].message.content.strip()
+        except Exception:
+            return ""
+
     def get_model_name(self) -> str:
         """Returns the currently configured model name."""
         return self.model_name

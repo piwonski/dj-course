@@ -308,10 +308,18 @@ class LlamaClient:
             total_chars = sum(len(msg["parts"][0]["text"]) for msg in history if "parts" in msg and msg["parts"])
             return total_chars // 4
     
+    def generate_once(self, prompt: str) -> str:
+        """Makes a single, stateless generation without creating a chat session."""
+        try:
+            output = self._llama_model(prompt, echo=False)
+            return output["choices"][0]["text"].strip()
+        except Exception:
+            return ""
+
     def get_model_name(self) -> str:
         """Returns the currently configured model name."""
         return self.model_name
-    
+
     def is_available(self) -> bool:
         """
         Checks if the LLM service is available and properly configured.
