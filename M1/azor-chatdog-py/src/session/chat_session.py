@@ -262,7 +262,8 @@ class ChatSession:
         if self.title:
             return
         prompt = (
-            "Na podstawie poniższej krótkiej rozmowy wygeneruj tytuł w maksymalnie 5 słowach. "
+            "Wygeneruj krótki tytuł (maksymalnie 5 słów) opisujący temat poniższej konwersacji. "
+            "Skup się na temacie rozmowy, ignorując styl i osobowość asystenta. "
             "Odpowiedź: tylko tytuł, bez cudzysłowów, bez dodatkowego tekstu.\n\n"
             f"Użytkownik: {user_message}\n"
             f"Asystent: {response_text}"
