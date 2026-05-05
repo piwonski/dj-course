@@ -22,13 +22,13 @@ def handle_command(user_input: str) -> bool:
     if command not in VALID_SLASH_COMMANDS:
         console.print_error(f"Błąd: Nieznana komenda: {command}. Użyj /help.")
         current = manager.get_current_session()
-        console.display_help(current.session_id)
+        console.display_help(current.session_id, current.title)
         return False
     
     # Help command
     elif command == '/help':
         current = manager.get_current_session()
-        console.display_help(current.session_id)
+        console.display_help(current.session_id, current.title)
     
     # Exit commands
     if command in ['/exit', '/quit']:
@@ -55,7 +55,7 @@ def handle_command(user_input: str) -> bool:
                 else:
                     # Successfully switched
                     console.print_info(f"\n--- Przełączono na sesję: {new_session.session_id} ---")
-                    console.display_help(new_session.session_id)
+                    console.display_help(new_session.session_id, new_session.title)
                     
                     # Display history summary if session has content
                     if has_history:
@@ -67,9 +67,9 @@ def handle_command(user_input: str) -> bool:
     # Session subcommands
     elif command == '/session':
         if len(parts) < 2:
-            console.print_error("Błąd: Komenda /session wymaga podkomendy (list, display, pop, clear, new).")
+            console.print_error("Błąd: Komenda /session wymaga podkomendy (list, display, pop, clear, new, rename).")
         else:
-            handle_session_subcommand(parts[1].lower(), manager)
+            handle_session_subcommand(parts[1].lower(), parts[2:], manager)
 
     elif command == '/pdf':
         current = manager.get_current_session()
@@ -86,7 +86,7 @@ def handle_command(user_input: str) -> bool:
     return False
 
 
-def handle_session_subcommand(subcommand: str, manager):
+def handle_session_subcommand(subcommand: str, args: list[str], manager):
     """Handles /session subcommands."""
     current = manager.get_current_session()
     
@@ -120,10 +120,18 @@ def handle_session_subcommand(subcommand: str, manager):
         
         # Display new session info
         console.print_info(f"\n--- Rozpoczęto nową sesję: {new_session.session_id} ---")
-        console.display_help(new_session.session_id)
+        console.display_help(new_session.session_id, new_session.title)
 
     elif subcommand == 'remove':
         remove_session_command(manager)
-        
+
+    elif subcommand == 'rename':
+        if args:
+            current.set_title(' '.join(args))
+            current.save_to_file()
+            console.print_info(f"Tytuł sesji ustawiony na: \"{current.display_title}\"")
+        else:
+            console.print_error("Błąd: Użycie: /session rename <title>")
+
     else:
         console.print_error(f"Błąd: Nieznana podkomenda dla /session: {subcommand}. Użyj /help.")

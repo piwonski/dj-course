@@ -164,7 +164,7 @@ class SessionManager:
 
             self._current_session = session
 
-            console.display_help(session.session_id)
+            console.display_help(session.session_id, session.title)
             if not session.is_empty():
                 from commands.session_summary import display_history_summary
                 display_history_summary(session.get_history(), session.assistant_name)
@@ -178,7 +178,7 @@ class SessionManager:
                 temperature=temperature,
             )
             self._current_session = session
-            console.display_help(session.session_id)
+            console.display_help(session.session_id, session.title)
 
         return session
     

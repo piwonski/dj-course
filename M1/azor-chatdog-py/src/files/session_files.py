@@ -1,41 +1,40 @@
 import os
 import json
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Any, Dict
 from files.config import LOG_DIR
 
-def load_session_history(session_id: str) -> tuple[List[Dict], str | None]:
-    """
-    Loads session history from a JSON file in universal format.
-    
-    Returns:
-        tuple[List[Dict], str | None]: (conversation_history, error_message)
-        History format: [{"role": "user|model", "parts": [{"text": "..."}]}, ...]
-    """
-    
+
+@dataclass
+class SessionData:
+    history: List[Dict]
+    title: str | None
+    error: str | None
+
+
+def load_session(session_id: str) -> SessionData:
+    """Loads session data from a JSON file in universal format."""
     log_filename = os.path.join(LOG_DIR, f"{session_id}-log.json")
     if not os.path.exists(log_filename):
-        return [], f"Session log file '{log_filename}' does not exist. Starting new session."
+        return SessionData(history=[], title=None, error=f"Session log file '{log_filename}' does not exist. Starting new session.")
 
     try:
         with open(log_filename, 'r', encoding='utf-8') as f:
             log_data = json.load(f)
     except json.JSONDecodeError:
-        return [], f"Cannot decode log file '{log_filename}'. Starting new session."
+        return SessionData(history=[], title=None, error=f"Cannot decode log file '{log_filename}'. Starting new session.")
 
-    # Convert JSON data to universal format (dictionaries)
-    # This format works with both Gemini and LLaMA clients
     history = []
     for entry in log_data.get('history', []):
-        content = {
+        history.append({
             "role": entry['role'],
             "parts": [{"text": entry['text']}]
-        }
-        history.append(content)
+        })
 
-    return history, None
+    return SessionData(history=history, title=log_data.get('title'), error=None)
 
-def save_session_history(session_id: str, history: List[Dict], system_prompt: str, model_name: str) -> tuple[bool, str | None]:
+def save_session_history(session_id: str, history: List[Dict], system_prompt: str, model_name: str, title: str | None = None) -> tuple[bool, str | None]:
     """
     Saves the current session history to a JSON file,
     only if the history contains at least one complete turn (User + Model).
@@ -73,6 +72,7 @@ def save_session_history(session_id: str, history: List[Dict], system_prompt: st
 
     log_data = {
         'session_id': session_id,
+        'title': title,
         'model': model_name,
         'system_role': system_prompt,
         'history': json_history
@@ -110,6 +110,7 @@ def list_sessions():
             
             sessions_data.append({
                 'id': sid,
+                'title': log_data.get('title'),
                 'messages_count': history_len,
                 'last_activity': time_str,
                 'error': None
