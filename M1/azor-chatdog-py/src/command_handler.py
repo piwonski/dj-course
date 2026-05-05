@@ -67,7 +67,7 @@ def handle_command(user_input: str) -> bool:
     # Session subcommands
     elif command == '/session':
         if len(parts) < 2:
-            console.print_error("Błąd: Komenda /session wymaga podkomendy (list, display, pop, clear, new, rename).")
+            console.print_error("Błąd: Komenda /session wymaga podkomendy (list, display, pop, clear, new, rename, title).")
         else:
             handle_session_subcommand(parts[1].lower(), parts[2:], manager)
 
@@ -132,6 +132,9 @@ def handle_session_subcommand(subcommand: str, args: list[str], manager):
             console.print_info(f"Tytuł sesji ustawiony na: \"{current.display_title}\"")
         else:
             console.print_error("Błąd: Użycie: /session rename <title>")
+
+    elif subcommand == 'title':
+        console.print_info(f"Tytuł sesji: \"{current.display_title}\"")
 
     else:
         console.print_error(f"Błąd: Nieznana podkomenda dla /session: {subcommand}. Użyj /help.")
