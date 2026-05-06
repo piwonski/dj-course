@@ -10,6 +10,8 @@ from .poet import create_poet_assistant
 from .businessman import create_businessman_assistant
 
 
+DEFAULT_ASSISTANT_NAME = "AZOR"
+
 _ASSISTANTS: dict[str, tuple[str, callable]] = {
     "AZOR":       ("Przyjacielski pies, najlepszy przyjaciel Reksia",         create_azor_assistant),
     "POET":       ("Barwny i opisowy, odpowiada pięknym, poetyckim językiem", create_poet_assistant),

@@ -88,19 +88,14 @@ class ChatSession:
     @classmethod
     def load_from_file(
         cls,
-        assistant: Assistant,
         session_id: str,
         top_p: float | None = None,
         top_k: int | None = None,
         temperature: float | None = None,
     ) -> tuple['ChatSession | None', str | None]:
         """
-        Loads a session from disk.
-        
-        Args:
-            assistant: Assistant instance to use for this session
-            session_id: ID of the session to load
-            
+        Loads a session from disk, reconstructing the assistant from saved data.
+
         Returns:
             tuple: (ChatSession object or None, error_message or None)
         """
@@ -109,6 +104,7 @@ class ChatSession:
         if data.error:
             return None, data.error
 
+        assistant = Assistant(name=data.assistant_name, system_prompt=data.system_role)
         session = cls(
             assistant=assistant,
             session_id=session_id,
@@ -137,6 +133,7 @@ class ChatSession:
             self._history,
             self.assistant.system_prompt,
             self._llm_client.get_model_name(),
+            self.assistant.name,
             self.title,
         )
     

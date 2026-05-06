@@ -1,6 +1,6 @@
 from cli import console
 from .chat_session import ChatSession
-from assistant import create_azor_assistant, select_assistant
+from assistant import select_assistant
 from files import session_files
 
 
@@ -89,8 +89,7 @@ class SessionManager:
             self._current_session.save_to_file()
         
         # Load new session
-        assistant = create_azor_assistant()
-        new_session, error = ChatSession.load_from_file(assistant=assistant, session_id=session_id)
+        new_session, error = ChatSession.load_from_file(session_id=session_id)
         
         if error:
             # Failed to load - don't change current session
@@ -142,9 +141,7 @@ class SessionManager:
         temperature = getattr(cli_args, "temperature", None)
 
         if cli_session_id:
-            assistant = create_azor_assistant()
             session, error = ChatSession.load_from_file(
-                assistant=assistant,
                 session_id=cli_session_id,
                 top_p=top_p,
                 top_k=top_k,
@@ -155,7 +152,7 @@ class SessionManager:
                 console.print_error(error)
                 # Fallback to new session
                 session = ChatSession(
-                    assistant=assistant,
+                    assistant=select_assistant(),
                     top_p=top_p,
                     top_k=top_k,
                     temperature=temperature,
