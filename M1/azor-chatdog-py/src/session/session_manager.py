@@ -1,6 +1,6 @@
 from cli import console
 from .chat_session import ChatSession
-from assistant import create_azor_assistant
+from assistant import create_azor_assistant, select_assistant
 from files import session_files
 
 
@@ -56,10 +56,10 @@ class SessionManager:
                 save_error = error
         
         # Create new session
-        assistant = create_azor_assistant()
+        assistant = select_assistant()
         new_session = ChatSession(assistant=assistant)
         self._current_session = new_session
-        
+
         return new_session, save_attempted, previous_session_id, save_error
     
     def switch_to_session(self, session_id: str) -> tuple[ChatSession | None, bool, str | None, bool, str | None, bool]:
@@ -119,7 +119,7 @@ class SessionManager:
         remove_success, remove_error = session_files.remove_session_file(removed_session_id)
 
         # Create a new session regardless of whether the file was successfully removed
-        assistant = create_azor_assistant()
+        assistant = select_assistant()
         new_session = ChatSession(assistant=assistant)
         self._current_session = new_session
 
@@ -170,7 +170,7 @@ class SessionManager:
                 display_history_summary(session.get_history(), session.assistant_name)
         else:
             print("Rozpoczynanie nowej sesji.")
-            assistant = create_azor_assistant()
+            assistant = select_assistant()
             session = ChatSession(
                 assistant=assistant,
                 top_p=top_p,
