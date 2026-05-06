@@ -7,6 +7,6 @@ from .assistent import Assistant
 from .azor import create_azor_assistant
 from .poet import create_poet_assistant
 from .businessman import create_businessman_assistant
-from .selector import select_assistant, DEFAULT_ASSISTANT_NAME
+from .selector import select_assistant, DEFAULT_ASSISTANT_NAME, ASSISTANT_NAMES
 
-__all__ = ['Assistant', 'create_azor_assistant', 'create_poet_assistant', 'create_businessman_assistant', 'select_assistant', 'DEFAULT_ASSISTANT_NAME']
+__all__ = ['Assistant', 'create_azor_assistant', 'create_poet_assistant', 'create_businessman_assistant', 'select_assistant', 'DEFAULT_ASSISTANT_NAME', 'ASSISTANT_NAMES']

@@ -18,7 +18,9 @@ _ASSISTANTS: dict[str, tuple[str, callable]] = {
     "BUSINESSMAN":("Rzeczowy i konkretny, zorientowany na cele",              create_businessman_assistant),
 }
 
-_completer = WordCompleter(list(_ASSISTANTS.keys()), ignore_case=True, sentence=True)
+ASSISTANT_NAMES = list(_ASSISTANTS.keys())
+
+_completer = WordCompleter(ASSISTANT_NAMES, ignore_case=True, sentence=True)
 
 _style = PTStyle.from_dict({
     'completion-menu.completion':         'bg:#1a1a2e #aaaaaa',

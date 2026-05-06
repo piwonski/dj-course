@@ -6,8 +6,9 @@ from commands.session_to_pdf import export_session_to_pdf
 from commands.session_remove import remove_session_command
 from commands.audio_generate import generate_audio_from_last_response
 from commands.audio_all import generate_audio_from_full_conversation
+from commands.assistant_switch import switch_assistant_command
 
-VALID_SLASH_COMMANDS = ['/exit', '/quit', '/switch', '/help', '/session', '/pdf', '/audio', '/audio-all']
+VALID_SLASH_COMMANDS = ['/exit', '/quit', '/switch', '/help', '/session', '/pdf', '/audio', '/audio-all', '/assistant']
 
 def handle_command(user_input: str) -> bool:
     """
@@ -83,7 +84,23 @@ def handle_command(user_input: str) -> bool:
         current = manager.get_current_session()
         generate_audio_from_full_conversation(current.get_history(), current.session_id, current.assistant_name)
 
+    elif command == '/assistant':
+        if len(parts) < 2:
+            console.print_error("Błąd: Komenda /assistant wymaga podkomendy (switch).")
+        else:
+            handle_assistant_subcommand(parts[1].lower(), manager)
+
     return False
+
+
+def handle_assistant_subcommand(subcommand: str, manager):
+    """Handles /assistant subcommands."""
+    current = manager.get_current_session()
+
+    if subcommand == 'switch':
+        switch_assistant_command(current)
+    else:
+        console.print_error(f"Błąd: Nieznana podkomenda dla /assistant: {subcommand}. Użyj /help.")
 
 
 def handle_session_subcommand(subcommand: str, args: list[str], manager):

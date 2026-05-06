@@ -275,6 +275,11 @@ class ChatSession:
         """Returns title if set, otherwise session_id as fallback."""
         return self.title if self.title else self.session_id
 
+    def switch_assistant(self, new_assistant: Assistant):
+        """Replaces the current assistant and reinitializes the LLM session keeping history."""
+        self.assistant = new_assistant
+        self._initialize_llm_session()
+
     @property
     def assistant_name(self) -> str:
         """

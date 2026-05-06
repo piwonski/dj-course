@@ -74,6 +74,7 @@ def display_help(session_id: str, title: str | None = None):
     print_help("  /session remove             - Usuwa wybraną sesję z dysku.")
     print_help("  /audio                      - Generuje plik audio z ostatniej odpowiedzi asystenta.")
     print_help("  /audio-all                  - Generuje plik audio z całej konwersacji w sesji.")
+    print_help("  /assistant switch <name>    - Zmienia asystenta w bieżącej sesji.")
 
 
 def display_final_instructions(session_id: str):

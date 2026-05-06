@@ -9,9 +9,10 @@ from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.styles import Style
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.filters import completion_is_selected
+from assistant import ASSISTANT_NAMES
 
 # --- Configuration ---
-SLASH_COMMANDS = ('/exit', '/quit', '/switch', '/help', '/session', '/audio', '/audio-all')
+SLASH_COMMANDS = ('/exit', '/quit', '/switch', '/help', '/session', '/audio', '/audio-all', '/assistant')
 SESSION_SUBCOMMANDS = ['list', 'display', 'pop', 'clear', 'new', 'remove', 'title', 'rename']
 
 
@@ -73,7 +74,8 @@ _commands_completer = NestedCompleter({
     '/switch': None,
     '/audio': None,
     '/audio-all': None,
-    '/session': WordCompleter(SESSION_SUBCOMMANDS, ignore_case=False)
+    '/session': WordCompleter(SESSION_SUBCOMMANDS, ignore_case=False),
+    '/assistant': NestedCompleter.from_nested_dict({'switch': {name: None for name in ASSISTANT_NAMES}}),
 })
 
 
