@@ -40,10 +40,11 @@ def main_loop():
             session = manager.get_current_session()
             
             # Send message (handles WAL logging internally)
+            was_empty = session.is_empty()
             response = session.send_message(user_input)
 
-            # Auto-generate title after first exchange if not set
-            if not session.title:
+            # Auto-generate title after first exchange of a new session
+            if not session.title and was_empty:
                 session.generate_title(user_input, response.text)
 
             # Get token information
