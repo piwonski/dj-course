@@ -1,7 +1,10 @@
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS order_timeline_events;
+DROP TABLE IF EXISTS delivery;
 DROP TABLE IF EXISTS transportation_orders;
 DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS driver_availability;
+DROP TABLE IF EXISTS vehicle_availability;
 DROP TABLE IF EXISTS drivers;
 DROP TABLE IF EXISTS vehicles;
 
@@ -72,7 +75,42 @@ CREATE TABLE order_items (
     FOREIGN KEY (order_id) REFERENCES transportation_orders(id)
 );
 
+CREATE TABLE driver_availability (
+    id INT PRIMARY KEY,
+    driver_id INT NOT NULL,
+    available_from TIMESTAMP NOT NULL,
+    available_to TIMESTAMP NOT NULL,
+    FOREIGN KEY (driver_id) REFERENCES drivers(id)
+);
+
+CREATE TABLE vehicle_availability (
+    id INT PRIMARY KEY,
+    vehicle_id INT NOT NULL,
+    available_from TIMESTAMP NOT NULL,
+    available_to TIMESTAMP NOT NULL,
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
+CREATE TABLE delivery (
+    id INT PRIMARY KEY,
+    order_id INT NOT NULL,
+    driver_id INT NOT NULL,
+    vehicle_id INT NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    scheduled_from TIMESTAMP NOT NULL,
+    scheduled_to TIMESTAMP NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES transportation_orders(id),
+    FOREIGN KEY (driver_id) REFERENCES drivers(id),
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+);
+
 CREATE INDEX idx_timeline_order ON order_timeline_events(order_id);
 CREATE INDEX idx_items_order ON order_items(order_id);
 CREATE INDEX idx_orders_customer ON transportation_orders(customer_id);
 CREATE INDEX idx_orders_status ON transportation_orders(status);
+CREATE INDEX idx_delivery_order ON delivery(order_id);
+CREATE INDEX idx_delivery_driver ON delivery(driver_id);
+CREATE INDEX idx_delivery_vehicle ON delivery(vehicle_id);
+CREATE INDEX idx_delivery_status ON delivery(status);
+CREATE INDEX idx_driver_availability_driver ON driver_availability(driver_id);
+CREATE INDEX idx_vehicle_availability_vehicle ON vehicle_availability(vehicle_id);
