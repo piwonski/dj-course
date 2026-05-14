@@ -11,8 +11,11 @@ import (
 
 	"tms-data-generator/generator/config"
 	"tms-data-generator/generator/customers"
+	"tms-data-generator/generator/delivery"
+	"tms-data-generator/generator/driver_availability"
 	"tms-data-generator/generator/drivers"
 	"tms-data-generator/generator/transportation_orders"
+	"tms-data-generator/generator/vehicle_availability"
 	"tms-data-generator/generator/vehicles"
 )
 
@@ -46,6 +49,9 @@ func Generate(outputFile string) error {
 	// driversStatements := drivers.GenerateInsertStatements(drivers.GenerateDrivers(config.DRIVERS))
 	// fmt.Println("done generating drivers", time.Now(), time.Since(startDrivers))
 
+	var vehiclesList []vehicles.Vehicle
+	var driversList []drivers.Driver
+	var customersList []customers.Customer
 	var vehiclesStatements string
 	var driversStatements string
 	var customersStatements string
@@ -59,21 +65,24 @@ func Generate(outputFile string) error {
 		defer wg.Done()
 		startVehicles := time.Now()
 		fmt.Println("Generating vehicles...", time.Now())
-		vehiclesStatements = vehicles.GenerateInsertStatements(vehicles.GenerateVehicles(config.VEHICLES))
+		vehiclesList = vehicles.GenerateVehicles(config.VEHICLES)
+		vehiclesStatements = vehicles.GenerateInsertStatements(vehiclesList)
 		fmt.Println("done generating vehicles", time.Now(), time.Since(startVehicles))
 	}()
 	go func() {
 		defer wg.Done()
 		startDrivers := time.Now()
 		fmt.Println("Generating drivers...", time.Now())
-		driversStatements = drivers.GenerateInsertStatements(drivers.GenerateDrivers(config.DRIVERS))
+		driversList = drivers.GenerateDrivers(config.DRIVERS)
+		driversStatements = drivers.GenerateInsertStatements(driversList)
 		fmt.Println("done generating drivers", time.Now(), time.Since(startDrivers))
 	}()
 	go func() {
 		defer wg.Done()
 		startCustomers := time.Now()
 		fmt.Println("Generating customers...", time.Now())
-		customersStatements = customers.GenerateInsertStatements(customers.GenerateCustomers(config.CUSTOMERS))
+		customersList = customers.GenerateCustomers(config.CUSTOMERS)
+		customersStatements = customers.GenerateInsertStatements(customersList)
 		fmt.Println("done generating customers", time.Now(), time.Since(startCustomers))
 	}()
 
@@ -83,7 +92,6 @@ func Generate(outputFile string) error {
 	// Phase 2: Generate orders (depends on customers)
 	startOrders := time.Now()
 	fmt.Println("Generating transportation orders...", time.Now())
-	customersList := customers.GenerateCustomers(config.CUSTOMERS)
 	ordersList := transportation_orders.GenerateTransportationOrders(config.TRANSPORTATION_ORDERS, customersList)
 	fmt.Println("done generating transportation orders", time.Now(), time.Since(startOrders))
 
@@ -99,18 +107,27 @@ func Generate(outputFile string) error {
 	transportation_orders.UpdateOrderAmounts(ordersList, orderItems)
 	fmt.Println("done updating order amounts", time.Now(), time.Since(startUpdate))
 
-	// Phase 5: Generate timeline events
+	// Phase 5: Generate deliveries (modifies order statuses to PENDING if no slot available)
+	startDeliveries := time.Now()
+	fmt.Println("Generating deliveries...", time.Now())
+	deliveries, driverAvailabilities, vehicleAvailabilities := delivery.GenerateDeliveries(ordersList, driversList, vehiclesList)
+	fmt.Println("done generating deliveries", time.Now(), time.Since(startDeliveries))
+
+	// Phase 6: Generate timeline events (uses final order statuses)
 	startTimeline := time.Now()
 	fmt.Println("Generating order timeline events...", time.Now())
 	timelineEvents := transportation_orders.GenerateOrderTimelineEvents(ordersList)
 	fmt.Println("done generating timeline events", time.Now(), time.Since(startTimeline))
 
-	// Phase 6: Generate SQL statements
+	// Phase 7: Generate SQL statements
 	startSQL := time.Now()
 	fmt.Println("Generating SQL statements...", time.Now())
 	ordersStatements := transportation_orders.GenerateInsertStatements(ordersList)
 	timelineStatements := transportation_orders.GenerateTimelineEventsInsertStatements(timelineEvents)
 	itemsStatements := transportation_orders.GenerateOrderItemsInsertStatements(orderItems)
+	deliveriesStatements := delivery.GenerateInsertStatements(deliveries)
+	driverAvailabilitiesStatements := driver_availability.GenerateInsertStatements(driverAvailabilities)
+	vehicleAvailabilitiesStatements := vehicle_availability.GenerateInsertStatements(vehicleAvailabilities)
 	fmt.Println("done generating SQL statements", time.Now(), time.Since(startSQL))
 
 	elapsed := time.Since(start)
@@ -127,6 +144,9 @@ func Generate(outputFile string) error {
 	sb.WriteString(ordersStatements)
 	sb.WriteString(timelineStatements)
 	sb.WriteString(itemsStatements)
+	sb.WriteString(driverAvailabilitiesStatements)
+	sb.WriteString(vehicleAvailabilitiesStatements)
+	sb.WriteString(deliveriesStatements)
 
 	err = os.WriteFile(outputFile, []byte(sb.String()), 0644)
 	if err != nil {
