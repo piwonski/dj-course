@@ -41,7 +41,7 @@ def select_assistant() -> Assistant:
                 completer=_completer,
                 complete_while_typing=True,
                 style=_style,
-                pre_run=lambda: get_app().current_buffer.start_completion(),
+                pre_run=lambda: get_app().current_buffer.start_completion(select_first=True),
             ).strip().upper()
         except (KeyboardInterrupt, EOFError):
             choice = "AZOR"
