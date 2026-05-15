@@ -14,6 +14,7 @@ from assistant import ASSISTANT_NAMES
 # --- Configuration ---
 SLASH_COMMANDS = ('/exit', '/quit', '/switch', '/help', '/session', '/audio', '/audio-all', '/assistant')
 SESSION_SUBCOMMANDS = ['list', 'display', 'pop', 'clear', 'new', 'remove', 'title', 'rename']
+ASSISTANT_SUBCOMMANDS = ['switch']
 
 
 class SlashCommandLexer(Lexer):
@@ -29,8 +30,8 @@ class SlashCommandLexer(Lexer):
                     tokens = [('class:slash-command', cmd)]
                     remainder = line[len(cmd) :]
 
-                    # Special handling for /session with subcommands
-                    if cmd == '/session' and remainder.strip():
+                    # Special handling for commands with subcommands
+                    if cmd in ('/session', '/assistant') and remainder.strip():
                         # Find the position where subcommand starts
                         space_prefix = len(remainder) - len(remainder.lstrip())
                         remainder_content = remainder[space_prefix:]
@@ -39,12 +40,13 @@ class SlashCommandLexer(Lexer):
                         parts = remainder_content.split(maxsplit=1)
                         subcommand = parts[0].strip()
 
-                        # Check if it's a valid subcommand
-                        if subcommand in SESSION_SUBCOMMANDS:
-                            # Add space before subcommand
+                        valid_map = {
+                            '/session': SESSION_SUBCOMMANDS,
+                            '/assistant': ASSISTANT_SUBCOMMANDS,
+                        }
+                        if subcommand in valid_map.get(cmd, []):
                             tokens.append(('class:normal-text', remainder[:space_prefix]))
                             tokens.append(('class:subcommand', subcommand))
-                            # Add rest of the line if present
                             if len(parts) > 1:
                                 tokens.append(('class:normal-text', ' ' + parts[1]))
                         else:
