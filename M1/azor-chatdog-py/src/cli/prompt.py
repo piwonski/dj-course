@@ -4,7 +4,7 @@ Includes syntax highlighting, auto-completion, and custom key bindings.
 """
 
 from prompt_toolkit import prompt
-from prompt_toolkit.completion import NestedCompleter, WordCompleter
+from prompt_toolkit.completion import Completer, Completion, NestedCompleter, WordCompleter
 from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.styles import Style
 from prompt_toolkit.key_binding import KeyBindings
@@ -59,6 +59,22 @@ class SlashCommandLexer(Lexer):
         return get_line_tokens
 
 
+class SessionCompleter(Completer):
+    """Dynamically loads sessions and suggests title (or ID) as display, inserts session ID."""
+
+    def get_completions(self, document, complete_event):
+        from files import session_files
+        word = document.get_word_before_cursor(WORD=True)
+        for s in session_files.list_sessions():
+            if s.get('error'):
+                continue
+            sid = s['id']
+            title = s.get('title')
+            display = title if title else sid
+            if not word or display.lower().startswith(word.lower()) or sid.lower().startswith(word.lower()):
+                yield Completion(sid, start_position=-len(word), display=display)
+
+
 # Custom style for prompt_toolkit
 _prompt_style = Style.from_dict({
     'slash-command': '#ff0066 bold',
@@ -71,7 +87,7 @@ _commands_completer = NestedCompleter({
     '/exit': None,
     '/quit': None,
     '/help': None,
-    '/switch': None,
+    '/switch': SessionCompleter(),
     '/audio': None,
     '/audio-all': None,
     '/session': WordCompleter(SESSION_SUBCOMMANDS, ignore_case=False),

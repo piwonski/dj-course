@@ -38,32 +38,28 @@ def handle_command(user_input: str) -> bool:
     
     # Switch command
     elif command == '/switch':
-        if len(parts) == 2:
+        if len(parts) != 2:
+            console.print_error("Błąd: Użycie: /switch <SESSION-ID>")
+        else:
             new_id = parts[1]
             current = manager.get_current_session()
             if new_id == current.session_id:
                 console.print_info("Jesteś już w tej sesji.")
             else:
                 new_session, save_attempted, previous_session_id, load_successful, load_error, has_history = manager.switch_to_session(new_id)
-                
-                # Handle console output for save attempt
+
                 if save_attempted:
                     console.print_info(f"\nZapisuję bieżącą sesję: {previous_session_id}...")
-                
-                # Handle load result
+
                 if not load_successful:
                     console.print_error(f"Nie można wczytać sesji o ID: {new_id}. {load_error}")
                 else:
-                    # Successfully switched
                     console.print_info(f"\n--- Przełączono na sesję: {new_session.session_id} ---")
                     console.display_help(new_session.session_id, new_session.title)
-                    
-                    # Display history summary if session has content
+
                     if has_history:
                         from commands.session_summary import display_history_summary
                         display_history_summary(new_session.get_history(), new_session.assistant_name)
-        else:
-            console.print_error("Błąd: Użycie: /switch <SESSION-ID>")
             
     # Session subcommands
     elif command == '/session':
