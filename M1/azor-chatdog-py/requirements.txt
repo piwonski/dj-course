@@ -1,4 +1,5 @@
 google-genai
+mcp
 python-dotenv
 llama-cpp-python
 openai>=1.0.0

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "azor-session-manager": {
+      "command": "/Users/wpiwonski/projects/dj-course/M1/azor-chatdog-py/.venv/bin/python",
+      "args": ["/Users/wpiwonski/projects/dj-course/M1/azor-chatdog-py/src/mcp_server.py"]
+    }
+  }
+}
