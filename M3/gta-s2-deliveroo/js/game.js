@@ -492,6 +492,41 @@ class Game {
                 ]
             },
 
+            {
+                name: "Rondo",
+                type: 'roundabout',
+                start: { x: 100, y: canvas.height/2 + 35, angle: 0 },
+                obstacles: [
+                    new RoundaboutIsland(canvas.width/2, canvas.height/2, 65)
+                ],
+                cars: [
+                    // Góra → dół (zachodni pas pionowy)
+                    new NpcCar({x: canvas.width/2 - 35, y: -100,  angle: 90, speed: 3, type: 'sedan',   color: '#e74c3c'}),
+                    new NpcCar({x: canvas.width/2 - 35, y: -450,  angle: 90, speed: 3, type: 'compact',  color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width/2 - 35, y: -800,  angle: 90, speed: 3, type: 'suv',      color: '#1abc9c'}),
+                    // Prawo → lewo (północny pas poziomy)
+                    new NpcCar({x: canvas.width,       y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'suv',     color: '#f39c12'}),
+                    new NpcCar({x: canvas.width - 400, y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'sedan',   color: '#e67e22'}),
+                    new NpcCar({x: canvas.width - 800, y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'compact', color: '#27ae60'}),
+                ],
+                parkingZones: [
+                    new ParkingZone({x: canvas.width/2 + 35, y: 110, w: 70, l: 130, angle: 90})
+                ],
+                curbs: [
+                    // Ramię górne
+                    new Curb(canvas.width/2 - 70, (canvas.height/2 - 130)/2,                            20, canvas.height/2 - 130, Math.PI/2),
+                    new Curb(canvas.width/2 + 70, (canvas.height/2 - 130)/2,                            20, canvas.height/2 - 130, Math.PI/2),
+                    // Ramię dolne
+                    new Curb(canvas.width/2 - 70, canvas.height/2 + 130 + (canvas.height/2 - 130)/2,   20, canvas.height/2 - 130, Math.PI/2),
+                    new Curb(canvas.width/2 + 70, canvas.height/2 + 130 + (canvas.height/2 - 130)/2,   20, canvas.height/2 - 130, Math.PI/2),
+                    // Ramię lewe
+                    new Curb((canvas.width/2 - 130)/2,                          canvas.height/2 - 70,   20, canvas.width/2 - 130,  0),
+                    new Curb((canvas.width/2 - 130)/2,                          canvas.height/2 + 70,   20, canvas.width/2 - 130,  0),
+                    // Ramię prawe
+                    new Curb(canvas.width/2 + 130 + (canvas.width/2 - 130)/2,  canvas.height/2 - 70,   20, canvas.width/2 - 130,  0),
+                    new Curb(canvas.width/2 + 130 + (canvas.width/2 - 130)/2,  canvas.height/2 + 70,   20, canvas.width/2 - 130,  0),
+                ]
+            },
         ];
     }
 
@@ -732,8 +767,9 @@ class Game {
             this.drawStreetCrossingEnvironment();
         } else if (this.levels[this.currentLevelIdx].type === 'highway') {
             this.drawHighwayEnvironment();
-        }
-        else {
+        } else if (this.levels[this.currentLevelIdx].type === 'roundabout') {
+            this.drawRoundaboutEnvironment();
+        } else {
             this.drawStreetEnvironment();
         }
 
@@ -816,6 +852,64 @@ class Game {
         ctx.stroke();
         ctx.setLineDash([]);
 
+    }
+
+    drawRoundaboutEnvironment() {
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const R_OUTER = 130;
+        const R_ISLAND = 65;
+        const ROAD_HALF = 70;
+
+        // Grass background
+        ctx.fillStyle = '#4a7c3a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Asphalt arms
+        ctx.fillStyle = '#444';
+        ctx.fillRect(cx - ROAD_HALF, 0, ROAD_HALF * 2, canvas.height);
+        ctx.fillRect(0, cy - ROAD_HALF, canvas.width, ROAD_HALF * 2);
+
+        // Roundabout ring
+        ctx.beginPath();
+        ctx.arc(cx, cy, R_OUTER, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Center island
+        ctx.fillStyle = '#3a7a2a';
+        ctx.beginPath();
+        ctx.arc(cx, cy, R_ISLAND, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#5aaa3a';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Center lines (yellow dashed) on each arm
+        ctx.strokeStyle = '#f1c40f';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([20, 20]);
+
+        ctx.beginPath();
+        ctx.moveTo(0, cy);
+        ctx.lineTo(cx - R_OUTER, cy);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(cx + R_OUTER, cy);
+        ctx.lineTo(canvas.width, cy);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(cx, 0);
+        ctx.lineTo(cx, cy - R_OUTER);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy + R_OUTER);
+        ctx.lineTo(cx, canvas.height);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
     }
 
     drawStreetCrossingEnvironment() {
