@@ -1,0 +1,154 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: auto;
+    padding: 20px;
+}
+
+#game-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto;
+}
+
+canvas {
+    background-color: #555;
+    box-shadow:
+        0 10px 40px rgba(0,0,0,0.5),
+        0 0 20px rgba(255,255,255,0.1),
+        inset 0 0 20px rgba(0,0,0,0.2);
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.1);
+}
+
+#ui-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.panel {
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    pointer-events: auto;
+    border: 1px solid #444;
+}
+
+h3 { margin: 0 0 10px 0; font-size: 16px; color: #3498db; }
+
+#levels-container {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+kbd {
+    background-color: #eee;
+    border-radius: 3px;
+    border: 1px solid #b4b4b4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.2), 0 2px 0 0 rgba(255,255,255,.7) inset;
+    color: #333;
+    display: inline-block;
+    font-size: .85em;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 4px;
+    white-space: nowrap;
+    margin: 2px;
+}
+
+.level-btn {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 5px;
+    background: #34495e;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+    text-align: left;
+}
+
+.level-btn:hover { background: #2980b9; }
+.level-btn.active { background: #27ae60; font-weight: bold; }
+
+#levels-container {
+    max-height: 180px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: monospace;
+    font-size: 14px;
+    color: #ccc;
+}
+.stat-val { color: #fff; font-weight: bold; }
+
+.restart-btn:hover {
+    background: #2ecc71;
+}
+
+.mode-btn {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    background: #34495e;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+    text-align: center;
+}
+.mode-btn:hover { background: #2980b9; }
+
+.collapsible-header {
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+    padding: 10px;
+    background: #34495e;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+.collapsible-header:hover {
+    background: #2c3e50;
+}
+.toggle-icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    font-size: 0.8em;
+}
+.toggle-icon.collapsed {
+    transform: rotate(-90deg);
+}
+.collapsible-content {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+}
+.collapsible-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+}
