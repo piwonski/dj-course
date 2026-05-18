@@ -131,6 +131,10 @@ def list_sessions():
                 'error': 'BŁĄD ODCZYTU PLIKU'
             })
     
+    sessions_data.sort(
+        key=lambda s: act if (act := s.get('last_activity', 'Brak aktywności')) != 'Brak aktywności' else '',
+        reverse=True,
+    )
     return sessions_data
 
 def remove_session_file(session_id: str) -> tuple[bool, str | None]:

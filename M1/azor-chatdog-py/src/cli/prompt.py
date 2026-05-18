@@ -15,6 +15,7 @@ from assistant import ASSISTANT_NAMES
 SLASH_COMMANDS = ('/exit', '/quit', '/switch', '/help', '/session', '/audio', '/audio-all', '/assistant')
 SESSION_SUBCOMMANDS = ['list', 'display', 'pop', 'clear', 'new', 'remove', 'title', 'rename']
 ASSISTANT_SUBCOMMANDS = ['switch']
+SESSION_NO_TITLE = '(brak tytułu)'
 
 
 class SlashCommandLexer(Lexer):
@@ -62,18 +63,25 @@ class SlashCommandLexer(Lexer):
 
 
 class SessionCompleter(Completer):
-    """Dynamically loads sessions and suggests title (or ID) as display, inserts session ID."""
+    """Dynamically loads sessions and suggests formatted rows, inserts session ID."""
 
     def get_completions(self, document, complete_event):
         from files import session_files
         word = document.get_word_before_cursor(WORD=True)
-        for s in session_files.list_sessions():
-            if s.get('error'):
-                continue
+
+        sessions = [s for s in session_files.list_sessions() if not s.get('error')]
+        if not sessions:
+            return
+
+        max_title_len = max(len(s.get('title') or SESSION_NO_TITLE) for s in sessions)
+
+        for s in sessions:
             sid = s['id']
-            title = s.get('title')
-            display = title if title else sid
-            if not word or display.lower().startswith(word.lower()) or sid.lower().startswith(word.lower()):
+            title = s.get('title') or SESSION_NO_TITLE
+            date = s.get('last_activity', '')
+            display = f"{title.ljust(max_title_len)} | {date} | {sid}"
+
+            if not word or title.lower().startswith(word.lower()) or sid.lower().startswith(word.lower()):
                 yield Completion(sid, start_position=-len(word), display=display)
 
 
