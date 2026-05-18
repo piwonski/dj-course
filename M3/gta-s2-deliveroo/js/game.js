@@ -509,18 +509,18 @@ class Game {
                     new ParkingZone({x: canvas.width - 130, y: canvas.height/2 + 35, w: 60, l: 120, angle: 0})
                 ],
                 curbs: [
-                    // Ramię górne
-                    new Curb(canvas.width/2 - 70, (canvas.height/2 - 280)/2,                            20, canvas.height/2 - 280, Math.PI/2),
-                    new Curb(canvas.width/2 + 70, (canvas.height/2 - 280)/2,                            20, canvas.height/2 - 280, Math.PI/2),
+                    // Ramię górne (cofnięte 50px od pierścienia ronda)
+                    new Curb(canvas.width/2 - 70, (canvas.height/2 - 330)/2,                            20, canvas.height/2 - 330, Math.PI/2),
+                    new Curb(canvas.width/2 + 70, (canvas.height/2 - 330)/2,                            20, canvas.height/2 - 330, Math.PI/2),
                     // Ramię dolne
-                    new Curb(canvas.width/2 - 70, canvas.height/2 + 280 + (canvas.height/2 - 280)/2,   20, canvas.height/2 - 280, Math.PI/2),
-                    new Curb(canvas.width/2 + 70, canvas.height/2 + 280 + (canvas.height/2 - 280)/2,   20, canvas.height/2 - 280, Math.PI/2),
+                    new Curb(canvas.width/2 - 70, canvas.height/2 + 330 + (canvas.height/2 - 330)/2,   20, canvas.height/2 - 330, Math.PI/2),
+                    new Curb(canvas.width/2 + 70, canvas.height/2 + 330 + (canvas.height/2 - 330)/2,   20, canvas.height/2 - 330, Math.PI/2),
                     // Ramię lewe
-                    new Curb((canvas.width/2 - 280)/2,                          canvas.height/2 - 70,   20, canvas.width/2 - 280,  0),
-                    new Curb((canvas.width/2 - 280)/2,                          canvas.height/2 + 70,   20, canvas.width/2 - 280,  0),
+                    new Curb((canvas.width/2 - 330)/2,                          canvas.height/2 - 70,   20, canvas.width/2 - 330,  0),
+                    new Curb((canvas.width/2 - 330)/2,                          canvas.height/2 + 70,   20, canvas.width/2 - 330,  0),
                     // Ramię prawe
-                    new Curb(canvas.width/2 + 280 + (canvas.width/2 - 280)/2,  canvas.height/2 - 70,   20, canvas.width/2 - 280,  0),
-                    new Curb(canvas.width/2 + 280 + (canvas.width/2 - 280)/2,  canvas.height/2 + 70,   20, canvas.width/2 - 280,  0),
+                    new Curb(canvas.width/2 + 330 + (canvas.width/2 - 330)/2,  canvas.height/2 - 70,   20, canvas.width/2 - 330,  0),
+                    new Curb(canvas.width/2 + 330 + (canvas.width/2 - 330)/2,  canvas.height/2 + 70,   20, canvas.width/2 - 330,  0),
                 ]
             },
         ];
