@@ -497,34 +497,30 @@ class Game {
                 type: 'roundabout',
                 start: { x: 100, y: canvas.height/2 + 35, angle: 0 },
                 obstacles: [
-                    new RoundaboutIsland(canvas.width/2, canvas.height/2, 65)
+                    new RoundaboutIsland(canvas.width/2, canvas.height/2, 130)
                 ],
                 cars: [
-                    // Góra → dół (zachodni pas pionowy)
-                    new NpcCar({x: canvas.width/2 - 35, y: -100,  angle: 90, speed: 3, type: 'sedan',   color: '#e74c3c'}),
-                    new NpcCar({x: canvas.width/2 - 35, y: -450,  angle: 90, speed: 3, type: 'compact',  color: '#9b59b6'}),
-                    new NpcCar({x: canvas.width/2 - 35, y: -800,  angle: 90, speed: 3, type: 'suv',      color: '#1abc9c'}),
-                    // Prawo → lewo (północny pas poziomy)
-                    new NpcCar({x: canvas.width,       y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'suv',     color: '#f39c12'}),
-                    new NpcCar({x: canvas.width - 400, y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'sedan',   color: '#e67e22'}),
-                    new NpcCar({x: canvas.width - 800, y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'compact', color: '#27ae60'}),
+                    // Ruch okrężny po rondzie (promień 165 = średnia R_OUTER i R_ISLAND)
+                    new NpcCar({x: canvas.width/2 + 165, y: canvas.height/2,       speed: 2, type: 'sedan',   color: '#e74c3c', movement: new CircularMovement(canvas.width/2, canvas.height/2, 165, 0.004)}),
+                    new NpcCar({x: canvas.width/2 - 83,  y: canvas.height/2 + 143, speed: 2, type: 'compact', color: '#9b59b6', movement: new CircularMovement(canvas.width/2, canvas.height/2, 165, 0.004)}),
+                    new NpcCar({x: canvas.width/2 - 83,  y: canvas.height/2 - 143, speed: 2, type: 'suv',     color: '#1abc9c', movement: new CircularMovement(canvas.width/2, canvas.height/2, 165, 0.004)}),
                 ],
                 parkingZones: [
                     new ParkingZone({x: canvas.width/2 + 35, y: 110, w: 70, l: 130, angle: 90})
                 ],
                 curbs: [
                     // Ramię górne
-                    new Curb(canvas.width/2 - 70, (canvas.height/2 - 130)/2,                            20, canvas.height/2 - 130, Math.PI/2),
-                    new Curb(canvas.width/2 + 70, (canvas.height/2 - 130)/2,                            20, canvas.height/2 - 130, Math.PI/2),
+                    new Curb(canvas.width/2 - 70, (canvas.height/2 - 200)/2,                            20, canvas.height/2 - 200, Math.PI/2),
+                    new Curb(canvas.width/2 + 70, (canvas.height/2 - 200)/2,                            20, canvas.height/2 - 200, Math.PI/2),
                     // Ramię dolne
-                    new Curb(canvas.width/2 - 70, canvas.height/2 + 130 + (canvas.height/2 - 130)/2,   20, canvas.height/2 - 130, Math.PI/2),
-                    new Curb(canvas.width/2 + 70, canvas.height/2 + 130 + (canvas.height/2 - 130)/2,   20, canvas.height/2 - 130, Math.PI/2),
+                    new Curb(canvas.width/2 - 70, canvas.height/2 + 200 + (canvas.height/2 - 200)/2,   20, canvas.height/2 - 200, Math.PI/2),
+                    new Curb(canvas.width/2 + 70, canvas.height/2 + 200 + (canvas.height/2 - 200)/2,   20, canvas.height/2 - 200, Math.PI/2),
                     // Ramię lewe
-                    new Curb((canvas.width/2 - 130)/2,                          canvas.height/2 - 70,   20, canvas.width/2 - 130,  0),
-                    new Curb((canvas.width/2 - 130)/2,                          canvas.height/2 + 70,   20, canvas.width/2 - 130,  0),
+                    new Curb((canvas.width/2 - 200)/2,                          canvas.height/2 - 70,   20, canvas.width/2 - 200,  0),
+                    new Curb((canvas.width/2 - 200)/2,                          canvas.height/2 + 70,   20, canvas.width/2 - 200,  0),
                     // Ramię prawe
-                    new Curb(canvas.width/2 + 130 + (canvas.width/2 - 130)/2,  canvas.height/2 - 70,   20, canvas.width/2 - 130,  0),
-                    new Curb(canvas.width/2 + 130 + (canvas.width/2 - 130)/2,  canvas.height/2 + 70,   20, canvas.width/2 - 130,  0),
+                    new Curb(canvas.width/2 + 200 + (canvas.width/2 - 200)/2,  canvas.height/2 - 70,   20, canvas.width/2 - 200,  0),
+                    new Curb(canvas.width/2 + 200 + (canvas.width/2 - 200)/2,  canvas.height/2 + 70,   20, canvas.width/2 - 200,  0),
                 ]
             },
         ];
@@ -857,8 +853,8 @@ class Game {
     drawRoundaboutEnvironment() {
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
-        const R_OUTER = 130;
-        const R_ISLAND = 65;
+        const R_OUTER = 200;
+        const R_ISLAND = 130;
         const ROAD_HALF = 70;
 
         // Grass background

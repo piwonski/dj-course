@@ -1,3 +1,30 @@
+class CircularMovement {
+    constructor(cx, cy, radius, angularSpeed) {
+        this.cx = cx;
+        this.cy = cy;
+        this.radius = radius;
+        this.angularSpeed = angularSpeed; // rad per speed unit per frame (dt≈1 at 60fps)
+    }
+
+    updatePosition(car, dt) {
+        const dx = car.x - this.cx;
+        const dy = car.y - this.cy;
+        let currentAngle = Math.atan2(dy, dx);
+        currentAngle += this.angularSpeed * car.speed * dt;
+        car.x = this.cx + Math.cos(currentAngle) * this.radius;
+        car.y = this.cy + Math.sin(currentAngle) * this.radius;
+        car.angle = currentAngle + Math.PI / 2; // tangent = direction of travel
+    }
+
+    handleWraparound(car) {
+        // Cars on the ring never leave the screen
+    }
+
+    canSpawn(car, game) {
+        return true; // Cars start on the ring and never respawn
+    }
+}
+
 class StraightMovement {
     constructor(angleDeg) {
         this.angle = angleDeg * Math.PI / 180;
