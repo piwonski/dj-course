@@ -65,8 +65,8 @@ class CircularCurb {
     draw(ctx) {
         const halfAngle = Math.asin(this.roadHalf / this.r);
         ctx.save();
-        ctx.strokeStyle = '#7f8c8d';
-        ctx.lineWidth = 8;
+        ctx.strokeStyle = '#95a5a6';
+        ctx.lineWidth = 20;
         // 4 arc segments between arm openings (arms at 0, π/2, π, 3π/2)
         for (let i = 0; i < 4; i++) {
             const a = i * Math.PI / 2;
