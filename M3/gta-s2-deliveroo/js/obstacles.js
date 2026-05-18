@@ -54,6 +54,44 @@ class RoundaboutIsland {
     }
 }
 
+class CircularCurb {
+    constructor(x, y, r, roadHalf = 70) {
+        this.x = x;
+        this.y = y;
+        this.r = r;
+        this.roadHalf = roadHalf;
+    }
+
+    draw(ctx) {
+        const halfAngle = Math.asin(this.roadHalf / this.r);
+        ctx.save();
+        ctx.strokeStyle = '#7f8c8d';
+        ctx.lineWidth = 8;
+        // 4 arc segments between arm openings (arms at 0, π/2, π, 3π/2)
+        for (let i = 0; i < 4; i++) {
+            const a = i * Math.PI / 2;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, a + halfAngle, a + Math.PI / 2 - halfAngle);
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    checkCollision(player) {
+        const corners = getCorners(player.x, player.y, player.w, player.l, player.angle);
+        for (const corner of corners) {
+            const dx = corner.x - this.x;
+            const dy = corner.y - this.y;
+            if (dx * dx + dy * dy <= this.r * this.r) continue; // inside circle, ok
+            // Corner is outside — allow if it's within an arm opening (horizontal or vertical road gap)
+            if (Math.abs(corner.x - this.x) < this.roadHalf) continue;
+            if (Math.abs(corner.y - this.y) < this.roadHalf) continue;
+            return true;
+        }
+        return false;
+    }
+}
+
 class ParkingZone {
     constructor(props) {
         this.x = props.x;

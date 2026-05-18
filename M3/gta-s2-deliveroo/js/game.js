@@ -521,6 +521,8 @@ class Game {
                     // Ramię prawe
                     new Curb(canvas.width/2 + 330 + (canvas.width/2 - 330)/2,  canvas.height/2 - 70,   20, canvas.width/2 - 330,  0),
                     new Curb(canvas.width/2 + 330 + (canvas.width/2 - 330)/2,  canvas.height/2 + 70,   20, canvas.width/2 - 330,  0),
+                    // Okrągły krawężnik zewnętrzny ronda
+                    new CircularCurb(canvas.width/2, canvas.height/2, 280),
                 ]
             },
         ];
@@ -666,7 +668,7 @@ class Game {
 
         // 3. Curbs (Special Physics)
         for (let c of this.currentCurbs) {
-            if (checkRectCollision(this.player, c)) {
+            if (c.checkCollision ? c.checkCollision(this.player) : checkRectCollision(this.player, c)) {
                 if (Math.abs(this.player.speed) > CONFIG.curbSafeSpeed) {
                     // High speed -> Crash
                     this.triggerGameOver();
