@@ -13,7 +13,7 @@ class CircularMovement {
         currentAngle += this.angularSpeed * car.speed * dt;
         car.x = this.cx + Math.cos(currentAngle) * this.radius;
         car.y = this.cy + Math.sin(currentAngle) * this.radius;
-        car.angle = currentAngle + Math.PI / 2; // tangent = direction of travel
+        car.angle = currentAngle + Math.sign(this.angularSpeed) * Math.PI / 2; // tangent = direction of travel
     }
 
     handleWraparound(car) {
