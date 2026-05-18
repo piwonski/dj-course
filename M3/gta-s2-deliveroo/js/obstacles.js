@@ -43,6 +43,17 @@ class Pillar {
     }
 }
 
+class RoundaboutIsland {
+    constructor(x, y, r) {
+        this.x = x;
+        this.y = y;
+        this.r = r;
+    }
+    draw(ctx) {
+        // Drawn by drawRoundaboutEnvironment
+    }
+}
+
 class ParkingZone {
     constructor(props) {
         this.x = props.x;

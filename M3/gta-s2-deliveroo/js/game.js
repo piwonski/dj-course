@@ -152,9 +152,9 @@ class Game {
                 start: { x: 100, y: canvas.height/2 + 35, angle: 0 },
                 obstacles: [],
                 cars: [
-                    new NpcCar({x: canvas.width, y: canvas.height/2 - 35, angle: 180, speed: -4, type: 'compact',color: '#9b59b6'}),
-                    new NpcCar({x: canvas.width - 600, y: canvas.height/2 - 35, angle: 180, speed: -7, kind: 'aggressive', type: 'sedan', color: '#34495e'}),
-                    new NpcCar({x: canvas.width - 300, y: canvas.height/2 - 35, angle: 180, speed: -5, type: 'suv', color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width, y: canvas.height/2 - 35, angle: 180, speed: 4, type: 'compact',color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width - 600, y: canvas.height/2 - 35, angle: 180, speed: 7, kind: 'aggressive', type: 'sedan', color: '#34495e'}),
+                    new NpcCar({x: canvas.width - 300, y: canvas.height/2 - 35, angle: 180, speed: 5, type: 'suv', color: '#9b59b6'}),
                 ],
                 parkingZones: [ new ParkingZone({x: canvas.width - 100, y: canvas.height/2 + 35, w: 70, l: 130, angle: 0}) ],
                 curbs: [
@@ -170,9 +170,9 @@ class Game {
                     new Pillar(605, canvas.height/2 + 35)
                 ],
                 cars: [
-                    new NpcCar({x: canvas.width, y: canvas.height/2 - 35, angle: 180, speed: -4, type: 'compact',color: '#9b59b6'}),
-                    new NpcCar({x: canvas.width - 600, y: canvas.height/2 - 35, angle: 180, speed: -7, kind: 'aggressive', type: 'sedan', color: '#34495e'}),
-                    new NpcCar({x: canvas.width - 300, y: canvas.height/2 - 35, angle: 180, speed: -5, type: 'suv', color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width, y: canvas.height/2 - 35, angle: 180, speed: 4, type: 'compact',color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width - 600, y: canvas.height/2 - 35, angle: 180, speed: 7, kind: 'aggressive', type: 'sedan', color: '#34495e'}),
+                    new NpcCar({x: canvas.width - 300, y: canvas.height/2 - 35, angle: 180, speed: 5, type: 'suv', color: '#9b59b6'}),
                 ],
                 parkingZones: [ new ParkingZone({x: canvas.width - 100, y: canvas.height/2 + 35, w: 70, l: 130, angle: 0}) ],
                 curbs: [
@@ -189,9 +189,9 @@ class Game {
                     new Pillar(500 + canvas.width/5, canvas.height/2 + 35),
                 ],
                 cars: [
-                    new NpcCar({x: canvas.width, y: canvas.height/2 - 35, angle: 180, speed: -4, type: 'compact',color: '#9b59b6'}),
-                    new NpcCar({x: canvas.width - 600, y: canvas.height/2 - 35, angle: 180, speed: -7, kind: 'aggressive', type: 'sedan', color: '#34495e'}),
-                    new NpcCar({x: canvas.width - 300, y: canvas.height/2 - 35, angle: 180, speed: -5, type: 'suv', color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width, y: canvas.height/2 - 35, angle: 180, speed: 4, type: 'compact',color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width - 600, y: canvas.height/2 - 35, angle: 180, speed: 7, kind: 'aggressive', type: 'sedan', color: '#34495e'}),
+                    new NpcCar({x: canvas.width - 300, y: canvas.height/2 - 35, angle: 180, speed: 5, type: 'suv', color: '#9b59b6'}),
                 ],
                 parkingZones: [ new ParkingZone({x: canvas.width - 100, y: canvas.height/2 + 35, w: 70, l: 130, angle: 0}) ],
                 curbs: [
@@ -205,9 +205,9 @@ class Game {
                 start: { x: 100, y: canvas.height/2 + 35, angle: 0 },
                 obstacles: [],
                 cars: [
-                    new NpcCar({x: canvas.width*3/4, y: canvas.height/2 - 35, angle: 180, speed: -6, color: '#9b59b6'}),
-                    new NpcCar({x: canvas.width*3/4 + 300, y: canvas.height/2 - 35, angle: 180, speed: -8, kind: 'aggressive', type: 'suv', color: '#812c2c'}),
-                    new NpcCar({x: canvas.width*1/4, y: canvas.height/2 - 35, angle: 180, speed: -6, type: 'compact', color: '#234923'}),
+                    new NpcCar({x: canvas.width*3/4, y: canvas.height/2 - 35, angle: 180, speed: 6, color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width*3/4 + 300, y: canvas.height/2 - 35, angle: 180, speed: 8, kind: 'aggressive', type: 'suv', color: '#812c2c'}),
+                    new NpcCar({x: canvas.width*1/4, y: canvas.height/2 - 35, angle: 180, speed: 6, type: 'compact', color: '#234923'}),
                     new NpcCar({x: 400, y: canvas.height/2 + 35, angle: 0, speed: 2, color: '#1abc9c'}),
                 ],
                 parkingZones: [ new ParkingZone({x: canvas.width - 100, y: canvas.height/2 + 35, w: 70, l: 100, angle: 0}) ],
@@ -222,9 +222,9 @@ class Game {
                 start: { x: 100, y: canvas.height/2 + 35, angle: 0 },
                 obstacles: [],
                 cars: [
-                    new NpcCar({x: canvas.width - 300, y: canvas.height/2 - 35, angle: 180, speed: -4, color: '#9b59b6'}),
-                    new NpcCar({x: canvas.width - 100, y: canvas.height/2 - 35, angle: 180, speed: -5.5, kind: 'aggressive', type: 'suv', color: '#812c2c'}),
-                    new NpcCar({x: canvas.width + 100, y: canvas.height/2 - 35, angle: 180, speed: -3, type: 'suv', color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width - 300, y: canvas.height/2 - 35, angle: 180, speed: 4, color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width - 100, y: canvas.height/2 - 35, angle: 180, speed: 5.5, kind: 'aggressive', type: 'suv', color: '#812c2c'}),
+                    new NpcCar({x: canvas.width + 100, y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'suv', color: '#9b59b6'}),
                     new NpcCar({x: canvas.width * 1/4, y: canvas.height/2 + 35, angle: 0, speed: 2, color: '#1abc9c'}),
                     new NpcCar({x: canvas.width * 2/4, y: canvas.height/2 + 35, angle: 0, speed: 2, color: '#225522'}),
                     new NpcCar({x: canvas.width * 3/4, y: canvas.height/2 + 35, angle: 0, speed: 2, color: '#726834'})
@@ -258,10 +258,10 @@ class Game {
                 cars: [
                     new ObstacleCar({x: 600, y: canvas.height/2 + 35, angle: -3, type: 'suv', color: '#e67e22'}),
                     new ObstacleCar({x: 870, y: canvas.height/2 + 35, angle: 5, type: 'suv', color: '#8e44ad'}),
-                    new NpcCar({x: canvas.width, y: canvas.height/2 - 35, angle: 180, speed: -3, type: 'suv', color: '#9b59b6'}),
-                    new NpcCar({x: canvas.width * 3/4, y: canvas.height/2 - 35, angle: 180, speed: -3, type: 'suv', color: '#333333'}),
-                    new NpcCar({x: canvas.width * 1/4, y: canvas.height/2 - 35, angle: 180, speed: -3, type: 'compact', color: '#ee8135'}),
-                    new NpcCar({x: canvas.width * 2/4, y: canvas.height/2 - 35, angle: 180, speed: -3, type: 'compact', color: '#6e0c21'}),
+                    new NpcCar({x: canvas.width, y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'suv', color: '#9b59b6'}),
+                    new NpcCar({x: canvas.width * 3/4, y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'suv', color: '#333333'}),
+                    new NpcCar({x: canvas.width * 1/4, y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'compact', color: '#ee8135'}),
+                    new NpcCar({x: canvas.width * 2/4, y: canvas.height/2 - 35, angle: 180, speed: 3, type: 'compact', color: '#6e0c21'}),
                 ],
                 parkingZones: [ new ParkingZone({x: 735, y: canvas.height/2 + 35, w: 70, l: 130, angle: 0 }) ],
                 curbs: [
@@ -275,12 +275,12 @@ class Game {
                 start: { x: canvas.width/2 - 35, y: 100 + 35, angle: 90 },
                 obstacles: [],
                 cars: [
-                    new NpcCar({x: canvas.width - 0, y: canvas.height/2 - 35, angle: 180, speed: -5, type: 'sedan', color: '#990212'}),
-                    new NpcCar({x: canvas.width - 250, y: canvas.height/2 - 35, angle: 180, speed: -5, type: 'compact', color: '#ee8135'}),
-                    new NpcCar({x: canvas.width - 500, y: canvas.height/2 - 35, angle: 180, speed: -5, type: 'compact', color: '#6e0c21'}),
-                    new NpcCar({x: canvas.width - 750, y: canvas.height/2 - 35, angle: 180, speed: -5, type: 'suv', color: '#9a8135'}),
-                    new NpcCar({x: canvas.width - 1000, y: canvas.height/2 - 35, angle: 180, speed: -5, type: 'suv', color: '#e74c3c'}),
-                    new NpcCar({x: canvas.width - 1250, y: canvas.height/2 - 35, angle: 180, speed: -5, type: 'compact', color: '#71797e'}),
+                    new NpcCar({x: canvas.width - 0, y: canvas.height/2 - 35, angle: 180, speed: 5, type: 'sedan', color: '#990212'}),
+                    new NpcCar({x: canvas.width - 250, y: canvas.height/2 - 35, angle: 180, speed: 5, type: 'compact', color: '#ee8135'}),
+                    new NpcCar({x: canvas.width - 500, y: canvas.height/2 - 35, angle: 180, speed: 5, type: 'compact', color: '#6e0c21'}),
+                    new NpcCar({x: canvas.width - 750, y: canvas.height/2 - 35, angle: 180, speed: 5, type: 'suv', color: '#9a8135'}),
+                    new NpcCar({x: canvas.width - 1000, y: canvas.height/2 - 35, angle: 180, speed: 5, type: 'suv', color: '#e74c3c'}),
+                    new NpcCar({x: canvas.width - 1250, y: canvas.height/2 - 35, angle: 180, speed: 5, type: 'compact', color: '#71797e'}),
 
                 ],
                 parkingZones: [
@@ -303,8 +303,8 @@ class Game {
                 start: { x: canvas.width/2 - 35, y: 100 + 35, angle: 90 },
                 obstacles: [],
                 cars: [
-                    new NpcCar({x: canvas.width - 0, y: canvas.height/2 - 35, angle: 180, speed: -15, type: 'sedan', color: '#990212'}),
-                    new NpcCar({x: canvas.width / 2, y: canvas.height/2 - 35, angle: 180, speed: -15, type: 'suv', color: '#cf8a36'}),
+                    new NpcCar({x: canvas.width - 0, y: canvas.height/2 - 35, angle: 180, speed: 15, type: 'sedan', color: '#990212'}),
+                    new NpcCar({x: canvas.width / 2, y: canvas.height/2 - 35, angle: 180, speed: 15, type: 'suv', color: '#cf8a36'}),
                 ],
                 parkingZones: [
                     new ParkingZone({x: canvas.width/2 - 35, y: canvas.height - 100, w: 70, l: 130, angle: 90})
@@ -326,8 +326,8 @@ class Game {
                 start: { x: canvas.width/2 - 35, y: 100 + 35, angle: 90 },
                 obstacles: [],
                 cars: [
-                    new NpcCar({x: canvas.width - 0, y: canvas.height/2 - 35, angle: 180, speed: -15, type: 'sedan', color: '#990212'}),
-                    new NpcCar({x: canvas.width / 2, y: canvas.height/2 - 35, angle: 180, speed: -15, type: 'suv', color: '#cf8a36'}),
+                    new NpcCar({x: canvas.width - 0, y: canvas.height/2 - 35, angle: 180, speed: 15, type: 'sedan', color: '#990212'}),
+                    new NpcCar({x: canvas.width / 2, y: canvas.height/2 - 35, angle: 180, speed: 15, type: 'suv', color: '#cf8a36'}),
                 ],
                 parkingZones: [
                     new ParkingZone({x: canvas.width/2 - 400, y: canvas.height/2 - 35, w: 130, l: 70, angle: 90})
@@ -349,10 +349,10 @@ class Game {
                 start: { x: canvas.width/2 - 35, y: 100 + 35, angle: 90 },
                 obstacles: [],
                 cars: [
-                    new NpcCar({x: canvas.width - 0, y: canvas.height/2 - 35, angle: 180, speed: -15, type: 'sedan', color: '#990212'}),
-                    new NpcCar({x: canvas.width / 2, y: canvas.height/2 - 35, angle: 180, speed: -15, type: 'suv', color: '#cf8a36'}),
-                    new NpcCar({x: canvas.width / 2, y: canvas.height/2 + 35, angle: 0, speed: +15, type: 'compact', color: '#297122'}),
-                    new NpcCar({x: 0, y: canvas.height/2 + 35, angle: 0, speed: +15, type: 'suv', color: '#912a4c'}),
+                    new NpcCar({x: canvas.width - 0, y: canvas.height/2 - 35, angle: 180, speed: 15, type: 'sedan', color: '#990212'}),
+                    new NpcCar({x: canvas.width / 2, y: canvas.height/2 - 35, angle: 180, speed: 15, type: 'suv', color: '#cf8a36'}),
+                    new NpcCar({x: canvas.width / 2, y: canvas.height/2 + 35, angle: 0, speed: 15, type: 'compact', color: '#297122'}),
+                    new NpcCar({x: 0, y: canvas.height/2 + 35, angle: 0, speed: 15, type: 'suv', color: '#912a4c'}),
                 ],
                 parkingZones: [
                     new ParkingZone({x: canvas.width/2 - 400, y: canvas.height/2 - 35, w: 130, l: 70, angle: 90})
@@ -374,8 +374,8 @@ class Game {
                 start: { x: canvas.width/2 - 35, y: 100 + 35, angle: 90 },
                 obstacles: [],
                 cars: [
-                    new NpcCar({x: canvas.width - 0, y: canvas.height/2 - 35, angle: 180, speed: -20, type: 'sedan', kind: 'aggressive', color: '#990212'}),
-                    new NpcCar({x: canvas.width / 2, y: canvas.height/2 - 35, angle: 180, speed: -20, type: 'suv', kind: 'aggressive', color: '#cf8a36'}),
+                    new NpcCar({x: canvas.width - 0, y: canvas.height/2 - 35, angle: 180, speed: 20, type: 'sedan', kind: 'aggressive', color: '#990212'}),
+                    new NpcCar({x: canvas.width / 2, y: canvas.height/2 - 35, angle: 180, speed: 20, type: 'suv', kind: 'aggressive', color: '#cf8a36'}),
                 ],
                 parkingZones: [
                     new ParkingZone({x: canvas.width/2 - 135, y: canvas.height/2 - 35, w: 130, l: 70, angle: 90})
@@ -397,10 +397,10 @@ class Game {
                 start: { x: canvas.width/2 - 35, y: 100 + 35, angle: 90 },
                 obstacles: [],
                 cars: [
-                    new NpcCar({x: canvas.width / 4 * 0, y: canvas.height/2 - 35, angle: 180, speed: -20, type: 'suv', color: '#849292'}),
-                    new NpcCar({x: canvas.width / 4 * 1, y: canvas.height/2 - 35, angle: 180, speed: -20, type: 'suv', color: '#b4b8ba'}),
-                    new NpcCar({x: canvas.width / 4 * 2, y: canvas.height/2 - 35, angle: 180, speed: -20, type: 'suv', color: '#ef67ef'}),
-                    new NpcCar({x: canvas.width / 4 * 3, y: canvas.height/2 - 35, angle: 180, speed: -20, type: 'suv', color: '#8960a8'}),
+                    new NpcCar({x: canvas.width / 4 * 0, y: canvas.height/2 - 35, angle: 180, speed: 20, type: 'suv', color: '#849292'}),
+                    new NpcCar({x: canvas.width / 4 * 1, y: canvas.height/2 - 35, angle: 180, speed: 20, type: 'suv', color: '#b4b8ba'}),
+                    new NpcCar({x: canvas.width / 4 * 2, y: canvas.height/2 - 35, angle: 180, speed: 20, type: 'suv', color: '#ef67ef'}),
+                    new NpcCar({x: canvas.width / 4 * 3, y: canvas.height/2 - 35, angle: 180, speed: 20, type: 'suv', color: '#8960a8'}),
                 ],
                 parkingZones: [
                     new ParkingZone({x: canvas.width/2 - 35, y: canvas.height - 100, w: 70, l: 130, angle: 90})
@@ -422,11 +422,11 @@ class Game {
                 start: { x: canvas.width/2 - 35, y: 100 + 35, angle: 90 },
                 obstacles: [],
                 cars: [
-                    new NpcCar({x: canvas.width / 5 * 0, y: canvas.height/2 - 35, angle: 180, speed: -30, type: 'suv', color: '#849292'}),
-                    new NpcCar({x: canvas.width / 5 * 1, y: canvas.height/2 - 35, angle: 180, speed: -30, type: 'suv', color: '#b4b8ba'}),
-                    new NpcCar({x: canvas.width / 5 * 2, y: canvas.height/2 - 35, angle: 180, speed: -30, type: 'suv', color: '#ef67ef'}),
-                    new NpcCar({x: canvas.width / 5 * 3, y: canvas.height/2 - 35, angle: 180, speed: -30, type: 'suv', color: '#8960a8'}),
-                    new NpcCar({x: canvas.width / 5 * 4, y: canvas.height/2 - 35, angle: 180, speed: -30, type: 'suv', color: '#333333'}),
+                    new NpcCar({x: canvas.width / 5 * 0, y: canvas.height/2 - 35, angle: 180, speed: 30, type: 'suv', color: '#849292'}),
+                    new NpcCar({x: canvas.width / 5 * 1, y: canvas.height/2 - 35, angle: 180, speed: 30, type: 'suv', color: '#b4b8ba'}),
+                    new NpcCar({x: canvas.width / 5 * 2, y: canvas.height/2 - 35, angle: 180, speed: 30, type: 'suv', color: '#ef67ef'}),
+                    new NpcCar({x: canvas.width / 5 * 3, y: canvas.height/2 - 35, angle: 180, speed: 30, type: 'suv', color: '#8960a8'}),
+                    new NpcCar({x: canvas.width / 5 * 4, y: canvas.height/2 - 35, angle: 180, speed: 30, type: 'suv', color: '#333333'}),
                 ],
                 parkingZones: [
                     new ParkingZone({x: canvas.width/2 - 35, y: canvas.height - 100, w: 70, l: 130, angle: 90})
@@ -466,19 +466,19 @@ class Game {
 
                     // Dolne pasy (←←←) - jadą w lewo
                     // Pas 3 (środkowy dolny)
-                    new NpcCar({x: canvas.width - 150, y: canvas.height/2 + 125, angle: 180, speed: -11, kind: 'aggressive', type: 'sedan', color: '#95a5a6'}),
-                    new NpcCar({x: canvas.width - 450, y: canvas.height/2 + 125, angle: 180, speed: -13, kind: 'aggressive', type: 'compact', color: '#d35400'}),
-                    new NpcCar({x: canvas.width - 750, y: canvas.height/2 + 125, angle: 180, speed: -12, kind: 'aggressive', type: 'suv', color: '#27ae60'}),
-                    new NpcCar({x: canvas.width - 1050, y: canvas.height/2 + 125, angle: 180, speed: -14, kind: 'aggressive', type: 'sedan', color: '#2980b9'}),
-                    new NpcCar({x: canvas.width - 1350, y: canvas.height/2 + 125, angle: 180, speed: -10, type: 'compact', color: '#8e44ad'}),
+                    new NpcCar({x: canvas.width - 150, y: canvas.height/2 + 125, angle: 180, speed: 11, kind: 'aggressive', type: 'sedan', color: '#95a5a6'}),
+                    new NpcCar({x: canvas.width - 450, y: canvas.height/2 + 125, angle: 180, speed: 13, kind: 'aggressive', type: 'compact', color: '#d35400'}),
+                    new NpcCar({x: canvas.width - 750, y: canvas.height/2 + 125, angle: 180, speed: 12, kind: 'aggressive', type: 'suv', color: '#27ae60'}),
+                    new NpcCar({x: canvas.width - 1050, y: canvas.height/2 + 125, angle: 180, speed: 14, kind: 'aggressive', type: 'sedan', color: '#2980b9'}),
+                    new NpcCar({x: canvas.width - 1350, y: canvas.height/2 + 125, angle: 180, speed: 10, type: 'compact', color: '#8e44ad'}),
 
                     // Pas 4 (dolny)
-                    new NpcCar({x: canvas.width - 250, y: canvas.height/2 + 205, angle: 180, speed: -15, kind: 'aggressive', type: 'suv', color: '#e74c3c'}),
-                    new NpcCar({x: canvas.width - 500, y: canvas.height/2 + 205, angle: 180, speed: -12, kind: 'aggressive', type: 'sedan', color: '#f39c12'}),
-                    new NpcCar({x: canvas.width - 800, y: canvas.height/2 + 205, angle: 180, speed: -13, type: 'compact', color: '#1abc9c'}),
-                    new NpcCar({x: canvas.width - 1100, y: canvas.height/2 + 205, angle: 180, speed: -11, kind: 'aggressive', type: 'suv', color: '#34495e'}),
-                    new NpcCar({x: canvas.width - 1400, y: canvas.height/2 + 205, angle: 180, speed: -14, kind: 'aggressive', type: 'sedan', color: '#c0392b'}),
-                    new NpcCar({x: canvas.width - 1650, y: canvas.height/2 + 205, angle: 180, speed: -16, type: 'compact', color: '#16a085'}),
+                    new NpcCar({x: canvas.width - 250, y: canvas.height/2 + 205, angle: 180, speed: 15, kind: 'aggressive', type: 'suv', color: '#e74c3c'}),
+                    new NpcCar({x: canvas.width - 500, y: canvas.height/2 + 205, angle: 180, speed: 12, kind: 'aggressive', type: 'sedan', color: '#f39c12'}),
+                    new NpcCar({x: canvas.width - 800, y: canvas.height/2 + 205, angle: 180, speed: 13, type: 'compact', color: '#1abc9c'}),
+                    new NpcCar({x: canvas.width - 1100, y: canvas.height/2 + 205, angle: 180, speed: 11, kind: 'aggressive', type: 'suv', color: '#34495e'}),
+                    new NpcCar({x: canvas.width - 1400, y: canvas.height/2 + 205, angle: 180, speed: 14, kind: 'aggressive', type: 'sedan', color: '#c0392b'}),
+                    new NpcCar({x: canvas.width - 1650, y: canvas.height/2 + 205, angle: 180, speed: 16, type: 'compact', color: '#16a085'}),
                 ],
                 parkingZones: [
                     // Parking na poboczu (górna strona)

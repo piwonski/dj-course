@@ -67,10 +67,11 @@ class ObstacleCar {
 class NpcCar extends ObstacleCar {
     constructor(props) {
         super(props);
-        this.originalSpeed = props.speed || -2;
+        this.originalSpeed = props.speed || 2;
         this.speed = this.originalSpeed;
         this.isStopped = false;
         this.kind = props.kind;
+        this.movement = props.movement || new StraightMovement(props.angle || 0);
 
         // Dźwięk klaksonu dla tego samochodu
         this.hornSound = new Audio('horn.wav');
@@ -83,7 +84,7 @@ class NpcCar extends ObstacleCar {
 
         // Spawn queue system
         this.isWaitingToSpawn = false;
-        this.spawnX = 0; // Pozycja gdzie samochód czeka na spawn
+        this.spawnPos = { x: 0, y: 0 }; // Pozycja gdzie samochód czeka na spawn
         this.minSpawnDistance = 200; // Minimalna odległość do najbliższego samochodu
     }
 
@@ -107,7 +108,8 @@ class NpcCar extends ObstacleCar {
             // Sprawdź czy jest wolna przestrzeń do spawnu
             if (this.canSpawn(game)) {
                 // Spawn samochód
-                this.x = this.spawnX;
+                this.x = this.spawnPos.x;
+                this.y = this.spawnPos.y;
                 this.isWaitingToSpawn = false;
                 this.speed = this.originalSpeed;
             } else {
@@ -194,29 +196,16 @@ class NpcCar extends ObstacleCar {
             this.speed *= Math.pow(brakingFactor, dt);
             if (Math.abs(this.speed) < 0.1) this.speed = 0;
         } else {
-            if (Math.abs(this.speed) < Math.abs(this.originalSpeed)) {
-                this.speed += Math.sign(this.originalSpeed) * acceleration * dt;
+            if (this.speed < this.originalSpeed) {
+                this.speed += acceleration * dt;
             } else {
                 this.speed = this.originalSpeed;
             }
         }
 
-        this.x += this.speed * dt;
-
-        // === WRAPAROUND Z KOLEJKOWANIEM ===
-        if (this.speed > 0 && this.x > canvas.width + this.l) {
-            // Jadący w prawo wychodzi za prawą krawędź - czeka na lewo
-            this.isWaitingToSpawn = true;
-            this.spawnX = -this.l;
-            this.x = -this.l - 500; // Ukryj poza ekranem
-            this.speed = 0;
-        } else if (this.speed < 0 && this.x < -this.l) {
-            // Jadący w lewo wychodzi za lewą krawędź - czeka na prawo
-            this.isWaitingToSpawn = true;
-            this.spawnX = canvas.width + this.l;
-            this.x = canvas.width + this.l + 500; // Ukryj poza ekranem
-            this.speed = 0;
-        }
+        // === RUCH I WRAPAROUND Z KOLEJKOWANIEM ===
+        this.movement.updatePosition(this, dt);
+        this.movement.handleWraparound(this);
 
         // Resetuj stuck timer gdy samochód się normalnie porusza
         this.stuckTimer = 0;
@@ -224,35 +213,7 @@ class NpcCar extends ObstacleCar {
 
     canSpawn(game) {
         // Sprawdź czy jest wystarczająco dużo miejsca do spawnu
-        const spawnThreshold = this.minSpawnDistance;
-
-        for (const otherCar of game.currentCars) {
-            if (this === otherCar) continue;
-
-            // Sprawdź tylko samochody w tym samym pasie (podobna pozycja Y)
-            const sameY = Math.abs(otherCar.y - this.y) < 50;
-            if (!sameY) continue;
-
-            // Sprawdź czy samochód nie jest w trakcie spawnu
-            if (otherCar instanceof NpcCar && otherCar.isWaitingToSpawn) continue;
-
-            // Oblicz odległość w kierunku ruchu
-            let distance;
-            if (this.originalSpeed > 0) {
-                // Spawnimy po lewej (-this.l), sprawdź odległość do samochodów przed nami
-                distance = otherCar.x - this.spawnX;
-            } else {
-                // Spawnimy po prawej (canvas.width + this.l), sprawdź odległość do samochodów przed nami
-                distance = this.spawnX - otherCar.x;
-            }
-
-            // Jeśli jakiś samochód jest zbyt blisko, nie spawnuj
-            if (distance >= 0 && distance < spawnThreshold) {
-                return false;
-            }
-        }
-
-        return true;
+        return this.movement.canSpawn(this, game);
     }
 
     draw(ctx) {
